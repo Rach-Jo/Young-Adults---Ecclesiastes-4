@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Station 4: Wise Advisor's Path</title>
+  <style>
+    :root {
+      --sea-bg: linear-gradient(135deg, #0284c7 0%, #0369a1 40%, #0f172a 100%);
+      --card-bg: rgba(15, 23, 42, 0.75);
+      --sand-gold: #fde047;
+      --seafoam: #38bdf8;
+      --accent: #0ea5e9;
+      --danger: #ef4444;
+      --text: #f8fafc;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: var(--sea-bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 2px solid rgba(56, 189, 248, 0.3);
+      border-radius: 24px;
+      padding: 30px;
+      max-width: 800px;
+      width: 100%;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      text-align: center;
+      position: relative;
+    }
+
+    h1 {
+      color: var(--sand-gold);
+      font-size: 2.2rem;
+      text-shadow: 0 2px 10px rgba(253, 224, 71, 0.3);
+      margin-bottom: 8px;
+    }
+
+    .instructions {
+      margin-bottom: 20px;
+      font-size: 1rem;
+      line-height: 1.5;
+      color: #bae6fd;
+    }
+
+    /* Grid Area */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      max-width: 580px;
+      margin: 0 auto 20px auto;
+      background: rgba(3, 105, 161, 0.4);
+      padding: 15px;
+      border-radius: 18px;
+      border: 2px solid rgba(56, 189, 248, 0.4);
+    }
+
+    .cell {
+      aspect-ratio: 1;
+      background: rgba(15, 23, 42, 0.8);
+      border: 2px solid #0284c7;
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.4rem;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+
+    .cell:hover {
+      background: rgba(14, 165, 233, 0.4);
+      border-color: var(--seafoam);
+    }
+
+    .cell.visited {
+      background: #0284c7;
+      color: #fff;
+      border-color: var(--sand-gold);
+    }
+
+    .cell.start {
+      background: #059669;
+      border-color: #34d399;
+    }
+
+    .cell.end {
+      background: #d97706;
+      border-color: var(--sand-gold);
+    }
+
+    .cell.hint-path {
+      background: var(--sand-gold) !important;
+      color: #0f172a !important;
+      border-color: #ffffff !important;
+      animation: pulse 0.8s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { transform: scale(0.95); }
+      to { transform: scale(1.05); }
+    }
+
+    .disabled-grid {
+      pointer-events: none;
+      opacity: 0.85;
+    }
+
+    /* Controls & Buttons */
+    .controls-area {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.1s, filter 0.2s;
+    }
+
+    .hint-btn {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      box-shadow: 0 4px 0 #b45309;
+    }
+
+    .reset-btn {
+      background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+      box-shadow: 0 4px 0 #0369a1;
+    }
+
+    button:hover { filter: brightness(1.1); }
+    button:active { transform: translateY(2px); }
+    button:disabled {
+      background: #475569;
+      box-shadow: none;
+      cursor: not-allowed;
+      filter: grayscale(0.8);
+    }
+
+    .message {
+      font-weight: 800;
+      font-size: 1.25rem;
+      min-height: 35px;
+    }
+
+    .success { color: #38bdf8; text-shadow: 0 0 10px rgba(56, 189, 248, 0.5); }
+    .error { color: #f87171; }
+    .hint-msg { color: var(--sand-gold); }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="mainContainer">
+    <h1>Puzzle 4: Wise Advisor's Path</h1>
+
+    <p class="instructions">
+      Navigate through the grid from <strong>START (S)</strong> to <strong>GOAL (G)</strong> by clicking adjacent tiles in order.<br>
+      Need guidance? Consult the <strong>Wise Advisor</strong> for a 3-second map reveal <em>(Max 2 hints available)</em>.
+    </p>
+
+    <!-- Grid View -->
+    <div class="grid-container" id="gridContainer"></div>
+
+    <!-- Controls -->
+    <div class="controls-area">
+      <button class="hint-btn" id="hintBtn" onclick="triggerWiseAdvisorHint()">💡 Wise Advisor (<span id="hintCount">2</span> left)</button>
+      <button class="reset-btn" id="resetBtn" onclick="resetPath()">Reset Path</button>
+    </div>
+
+    <div class="message" id="message"></div>
+  </div>
+
+  <script>
+    const GRID_SIZE = 7;
+    const startPos = { r: 0, c: 0 };
+    const goalPos = { r: 6, c: 6 };
+
+    // A longer, more winding 25-step secret path
+    const solutionPath = [
+      "0-0", "0-1", "0-2", "1-2", "2-2", "2-1", "2-0", 
+      "3-0", "4-0", "5-0", "5-1", "5-2", "4-2", "4-3", 
+      "4-4", "3-4", "2-4", "1-4", "1-5", "1-6", "2-6", 
+      "3-6", "4-6", "5-6", "6-6"
+    ];
+
+    let userPath = ["0-0"];
+    let hintsRemaining = 2;
+    let isViewingHint = false;
+
+    const gridContainer = document.getElementById('gridContainer');
+    const messageDiv = document.getElementById('message');
+    const hintBtn = document.getElementById('hintBtn');
+    const hintCount = document.getElementById('hintCount');
+
+    function buildGrid() {
+      gridContainer.innerHTML = '';
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          const cellKey = `${r}-${c}`;
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.dataset.key = cellKey;
+          cell.dataset.r = r;
+          cell.dataset.c = c;
+
+          if (r === startPos.r && c === startPos.c) {
+            cell.classList.add('start');
+            cell.innerText = 'S';
+          } else if (r === goalPos.r && c === goalPos.c) {
+            cell.classList.add('end');
+            cell.innerText = 'G';
+          }
+
+          cell.onclick = () => handleCellClick(r, c, cellKey);
+          gridContainer.appendChild(cell);
+        }
+      }
+      renderUserPath();
+    }
+
+    function handleCellClick(r, c, key) {
+      if (isViewingHint) return;
+
+      const lastKey = userPath[userPath.length - 1];
+      const [lastR, lastC] = lastKey.split('-').map(Number);
+
+      // Verify adjacency (horizontal or vertical)
+      const isAdjacent = (Math.abs(lastR - r) + Math.abs(lastC - c)) === 1;
+
+      if (!isAdjacent) {
+        messageDiv.className = 'message error';
+        messageDiv.innerText = '⚠️ You can only move to adjacent tiles!';
+        return;
+      }
+
+      if (userPath.includes(key)) {
+        // Allows stepping back one step
+        if (key === userPath[userPath.length - 2]) {
+          userPath.pop();
+          renderUserPath();
+          messageDiv.innerText = '';
+        }
+        return;
+      }
+
+      userPath.push(key);
+      renderUserPath();
+      messageDiv.innerText = '';
+
+      // Check win condition when goal reached
+      if (r === goalPos.r && c === goalPos.c) {
+        checkSolution();
+      }
+    }
+
+    function renderUserPath() {
+      document.querySelectorAll('.cell').forEach(cell => {
+        const key = cell.dataset.key;
+        if (userPath.includes(key)) {
+          cell.classList.add('visited');
+        } else {
+          cell.classList.remove('visited');
+        }
+      });
+    }
+
+    function triggerWiseAdvisorHint() {
+      if (hintsRemaining <= 0 || isViewingHint) return;
+
+      hintsRemaining--;
+      hintCount.innerText = hintsRemaining;
+      isViewingHint = true;
+
+      if (hintsRemaining === 0) {
+        hintBtn.disabled = true;
+      }
+
+      gridContainer.classList.add('disabled-grid');
+      messageDiv.className = 'message hint-msg';
+      messageDiv.innerText = '📜 The Wise Advisor reveals the path! (Map frozen)';
+
+      // Highlight full advisor path
+      document.querySelectorAll('.cell').forEach(cell => {
+        if (solutionPath.includes(cell.dataset.key)) {
+          cell.classList.add('hint-path');
+        }
+      });
+
+      // Freeze gameplay for 3 seconds then restore
+      setTimeout(() => {
+        document.querySelectorAll('.cell').forEach(cell => {
+          cell.classList.remove('hint-path');
+        });
+        gridContainer.classList.remove('disabled-grid');
+        isViewingHint = false;
+        messageDiv.innerText = '';
+      }, 3000);
+    }
+
+    function resetPath() {
+      if (isViewingHint) return;
+      userPath = ["0-0"];
+      renderUserPath();
+      messageDiv.innerText = '';
+    }
+
+    function checkSolution() {
+      const isCorrect = userPath.length === solutionPath.length && 
+                        userPath.every((val, index) => val === solutionPath[index]);
+
+      if (isCorrect) {
+        messageDiv.className = 'message success';
+        messageDiv.innerHTML = '🎉 Good job! The unlocked letter is D!';
+      } else {
+        messageDiv.className = 'message error';
+        messageDiv.innerText = '❌ Incorrect path taken! Click Reset Path to try again.';
+      }
+    }
+
+    buildGrid();
+  </script>
+</body>
+</html>
