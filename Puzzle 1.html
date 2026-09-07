@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Station 1: Hidden Letter Hunt</title>
+  <title>Puzzle 1: Hidden Letter Hunt</title>
   <style>
     :root {
       --sea-bg: linear-gradient(135deg, #0284c7 0%, #0369a1 40%, #0f172a 100%);
@@ -31,29 +31,7 @@
       min-height: 100vh;
       padding: 12px;
       position: relative;
-    }
-
-    /* Penalty Timer Banner */
-    .timer-banner {
-      position: fixed;
-      top: 15px;
-      right: 15px;
-      background: rgba(127, 29, 29, 0.95);
-      border: 2px solid var(--danger);
-      border-radius: 12px;
-      padding: 8px 16px;
-      font-weight: 800;
-      color: #fca5a5;
-      font-size: 1rem;
-      display: none;
-      box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
-      z-index: 100;
-      animation: pulse 1s infinite alternate;
-    }
-
-    @keyframes pulse {
-      from { transform: scale(1); }
-      to { transform: scale(1.05); }
+      overflow-x: hidden;
     }
 
     .container {
@@ -66,6 +44,7 @@
       width: 100%;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
       text-align: center;
+      position: relative;
     }
 
     h1 {
@@ -93,7 +72,7 @@
       border: 2px solid rgba(56, 189, 248, 0.4);
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
       background: #022c22;
-      touch-action: none; /* Prevents page scroll while dragging finger */
+      touch-action: none;
     }
 
     svg {
@@ -103,7 +82,7 @@
       aspect-ratio: 8 / 5;
     }
 
-    /* Responsive Magnifying Glass Window */
+    /* Responsive Magnifying Glass */
     .magnifier {
       position: absolute;
       width: clamp(90px, 25vw, 130px);
@@ -117,7 +96,7 @@
       z-index: 10;
     }
 
-    /* Ultra-Camouflaged Letter C Styling */
+    /* Camouflaged Letter Styling */
     .hidden-c {
       font-family: 'Times New Roman', serif;
       font-weight: bold;
@@ -139,12 +118,7 @@
       100% { transform: rotate(360deg); }
     }
 
-    .disabled-input {
-      pointer-events: none;
-      filter: grayscale(0.8);
-    }
-
-    /* Submission Form Controls */
+    /* Form Controls */
     .submit-box {
       display: flex;
       justify-content: center;
@@ -196,16 +170,63 @@
 
     .success { color: #38bdf8; text-shadow: 0 0 10px rgba(56, 189, 248, 0.5); }
     .error { color: #f87171; }
+
+    /* Floating Penalty Text Animation */
+    .floating-penalty {
+      position: absolute;
+      color: #ef4444;
+      font-weight: 900;
+      font-size: 1.5rem;
+      pointer-events: none;
+      animation: floatUp 1.2s forwards ease-out;
+      text-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+      z-index: 50;
+    }
+
+    @keyframes floatUp {
+      0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-50px) scale(1.2);
+      }
+    }
+
+    /* Completion View Styling */
+    .results-page {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      padding: 10px;
+    }
+
+    .letter-display {
+      font-size: clamp(3rem, 10vw, 5rem);
+      font-weight: 900;
+      color: var(--sand-gold);
+      text-shadow: 0 0 20px rgba(253, 224, 71, 0.6);
+      margin: 10px 0;
+    }
+
+    .score-badge {
+      background: rgba(14, 165, 233, 0.2);
+      border: 2px solid var(--seafoam);
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-size: clamp(1.2rem, 4vw, 1.6rem);
+      font-weight: 800;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Penalty Clock -->
-  <div class="timer-banner" id="timerBanner">
-    🚨 Penalty: <span id="timerVal">10</span>s
-  </div>
-
-  <div class="container" id="mainContainer">
+  <!-- Game Page Container -->
+  <div class="container" id="gameContainer">
     <h1>Puzzle 1: Hidden Letter Hunt</h1>
 
     <p class="instructions">
@@ -229,7 +250,6 @@
           </linearGradient>
         </defs>
 
-        <!-- Background & Scene elements -->
         <rect width="800" height="500" fill="url(#skyGrad)" />
         <circle cx="680" cy="90" r="45" fill="#fde047" opacity="0.25" />
 
@@ -252,7 +272,6 @@
         <path d="M 605,422 A 7,7 0 0,1 617,422" stroke="#065f46" stroke-width="2" fill="none" />
         <path d="M 622,410 A 12,12 0 0,1 640,410" stroke="#022c22" stroke-width="2.5" fill="none" />
 
-        <!-- Micro-Hidden Letter 'C' -->
         <text 
           x="602" 
           y="423" 
@@ -265,13 +284,21 @@
       </svg>
     </div>
 
-    <!-- Letter Input & Verification -->
-    <div class="submit-box">
+    <!-- Controls -->
+    <div class="submit-box" id="submitBox">
       <input type="text" id="letterInput" maxlength="1" placeholder="?" />
       <button id="submitBtn" onclick="checkAnswer()">Submit</button>
     </div>
 
     <div class="message" id="message"></div>
+  </div>
+
+  <!-- Results View Page -->
+  <div class="container results-page" id="resultsContainer">
+    <h1>Puzzle Completed!</h1>
+    <p class="instructions">The first letter found is:</p>
+    <div class="letter-display">"C"</div>
+    <div class="score-badge">Your Points: <span id="finalScore">0</span></div>
   </div>
 
   <script>
@@ -280,12 +307,13 @@
     const mainSvg = document.getElementById('mainSvg');
     const letterInput = document.getElementById('letterInput');
     const messageDiv = document.getElementById('message');
-    const timerBanner = document.getElementById('timerBanner');
-    const timerVal = document.getElementById('timerVal');
-    const mainContainer = document.getElementById('mainContainer');
-    const submitBtn = document.getElementById('submitBtn');
+    const gameContainer = document.getElementById('gameContainer');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const submitBox = document.getElementById('submitBox');
+    const finalScoreDisplay = document.getElementById('finalScore');
 
-    let penaltyActive = false;
+    let startTime = Date.now();
+    let wrongAttempts = 0;
     let svgDataUrl = "";
 
     function prepareMagnifier() {
@@ -297,12 +325,10 @@
 
     window.onload = () => {
       prepareMagnifier();
+      startTime = Date.now(); // Start puzzle timer
     };
 
-    // Unified positioning for mouse and touch events
     function updateMagnifier(clientX, clientY) {
-      if (penaltyActive) return;
-
       const rect = sceneWrapper.getBoundingClientRect();
       const x = clientX - rect.left;
       const y = clientY - rect.top;
@@ -325,11 +351,9 @@
       magnifier.style.backgroundPosition = `-${x * zoom - magWidth / 2}px -${y * zoom - magHeight / 2}px`;
     }
 
-    // Mouse Listeners
     sceneWrapper.addEventListener('mousemove', (e) => updateMagnifier(e.clientX, e.clientY));
     sceneWrapper.addEventListener('mouseleave', () => magnifier.style.display = 'none');
 
-    // Touch Listeners for Mobile devices
     sceneWrapper.addEventListener('touchstart', (e) => {
       if (e.touches.length > 0) {
         updateMagnifier(e.touches[0].clientX, e.touches[0].clientY);
@@ -344,34 +368,26 @@
 
     sceneWrapper.addEventListener('touchend', () => magnifier.style.display = 'none');
 
-    function startPenaltyClock() {
-      penaltyActive = true;
-      let secondsLeft = 10;
+    // Trigger floating -20 points text on wrong attempt
+    function triggerPenaltyAnimation() {
+      const penaltyEl = document.createElement('div');
+      penaltyEl.className = 'floating-penalty';
+      penaltyEl.innerText = '-20 points';
 
-      timerBanner.style.display = 'block';
-      timerVal.innerText = secondsLeft;
-      mainContainer.classList.add('disabled-input');
-      submitBtn.disabled = true;
-      magnifier.style.display = 'none';
+      const rect = submitBox.getBoundingClientRect();
+      const containerRect = gameContainer.getBoundingClientRect();
 
-      const interval = setInterval(() => {
-        secondsLeft--;
-        timerVal.innerText = secondsLeft;
+      penaltyEl.style.left = `${rect.left - containerRect.left + rect.width / 2 - 40}px`;
+      penaltyEl.style.top = `${rect.top - containerRect.top - 20}px`;
 
-        if (secondsLeft <= 0) {
-          clearInterval(interval);
-          penaltyActive = false;
-          timerBanner.style.display = 'none';
-          mainContainer.classList.remove('disabled-input');
-          submitBtn.disabled = false;
-          messageDiv.innerText = '';
-        }
-      }, 1000);
+      gameContainer.appendChild(penaltyEl);
+
+      setTimeout(() => {
+        penaltyEl.remove();
+      }, 1200);
     }
 
     function checkAnswer() {
-      if (penaltyActive) return;
-
       const userGuess = letterInput.value.trim().toUpperCase();
 
       if (!userGuess) {
@@ -381,6 +397,25 @@
       }
 
       if (userGuess === 'C') {
+        const endTime = Date.now();
+        const totalTimeSeconds = Math.floor((endTime - startTime) / 1000);
+
+        // Base score calculation based on time
+        let baseScore = 50;
+        if (totalTimeSeconds <= 5) {
+          baseScore = 100;
+        } else if (totalTimeSeconds <= 10) {
+          baseScore = 90;
+        } else if (totalTimeSeconds <= 15) {
+          baseScore = 80;
+        } else if (totalTimeSeconds <= 20) {
+          baseScore = 70;
+        }
+
+        // Apply wrong attempt penalty
+        const finalScore = baseScore - (wrongAttempts * 20);
+
+        // Render success state briefly before moving to results page
         messageDiv.className = 'message success';
         messageDiv.innerText = 'Good job in finding the first letter';
 
@@ -390,11 +425,18 @@
         letter.style.fontSize = '22px';
         document.getElementById('foundCircle').style.display = 'block';
 
-        prepareMagnifier();
+        setTimeout(() => {
+          gameContainer.style.display = 'none';
+          resultsContainer.style.display = 'flex';
+          finalScoreDisplay.innerText = finalScore;
+        }, 1500);
+
       } else {
+        wrongAttempts++;
         messageDiv.className = 'message error';
         messageDiv.innerText = 'try again';
-        startPenaltyClock();
+        triggerPenaltyAnimation();
+        letterInput.value = '';
       }
     }
   </script>
