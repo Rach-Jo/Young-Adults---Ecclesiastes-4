@@ -319,7 +319,8 @@
     <h1>Puzzle 4: Wise Advisor's Path</h1>
 
     <p class="instructions" id="instructionsText">
-      Welcome traveler! Click <strong>SHOW</strong> to preview the secret path from <strong>START (S)</strong> to <strong>GOAL (G)</strong> for 5 seconds before beginning!
+      Welcome traveler! Click <strong>SHOW</strong> to preview the secret path from <strong>START (S)</strong> to <strong>GOAL (G)</strong> <br>
+      You have 5 seconds to view the map before beginning!
     </p>
 
     <!-- Grid View -->
@@ -539,23 +540,27 @@
       if (isViewingHint || !gameStarted) return;
 
       const lastKey = userPath[userPath.length - 1];
-      const [lastR, lastC] = lastKey.split('-').map(Number);
 
+      // Deselect if clicking the very same (latest selected) cell (unless it's the start tile)
+      if (key === lastKey) {
+        if (userPath.length > 1) {
+          userPath.pop();
+          renderUserPath();
+          messageDiv.innerText = '';
+        }
+        return;
+      }
+
+      // Prevent selecting a cell already visited deeper in the path
+      if (userPath.includes(key)) return;
+
+      // Ensure adjacency rule for new moves
+      const [lastR, lastC] = lastKey.split('-').map(Number);
       const isAdjacent = (Math.abs(lastR - r) + Math.abs(lastC - c)) === 1;
 
       if (!isAdjacent) {
         messageDiv.className = 'message error';
         messageDiv.innerText = '⚠️ You can only move to adjacent tiles!';
-        return;
-      }
-
-      if (userPath.includes(key)) {
-        // Allow stepping back one position
-        if (key === userPath[userPath.length - 2]) {
-          userPath.pop();
-          renderUserPath();
-          messageDiv.innerText = '';
-        }
         return;
       }
 
@@ -644,7 +649,7 @@
         const finalScore = Math.max(10, baseScore - (wrongAttempts * 20));
 
         messageDiv.className = 'message success';
-        messageDiv.innerHTML = '🎉 Good job! You found the fourth letter: D';
+        messageDiv.innerHTML = '🎉 Good job! You made it!!!';
 
         setTimeout(() => {
           mainContainer.style.display = 'none';
