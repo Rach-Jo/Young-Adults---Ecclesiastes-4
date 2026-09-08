@@ -182,6 +182,14 @@
       transition: transform 0.1s, filter 0.2s;
     }
 
+    .start-btn {
+      background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+      box-shadow: 0 4px 0 #b45309;
+      padding: 14px 36px;
+      font-size: clamp(1.1rem, 4vw, 1.3rem);
+      margin-top: 15px;
+    }
+
     .submit-btn {
       background: linear-gradient(135deg, #10b981 0%, #059669 100%);
       box-shadow: 0 4px 0 #047857;
@@ -225,6 +233,41 @@
         opacity: 0;
         transform: translateY(-40px) scale(1.15);
       }
+    }
+
+    /* Start / Instructions Landing Page */
+    .start-page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 10px;
+    }
+
+    .rules-box {
+      background: rgba(15, 23, 42, 0.6);
+      border: 2px solid rgba(52, 211, 153, 0.4);
+      border-radius: 12px;
+      padding: 18px;
+      text-align: left;
+      font-size: clamp(0.9rem, 3.2vw, 1.05rem);
+      line-height: 1.6;
+      color: #e2e8f0;
+      margin: 10px 0;
+    }
+
+    .rules-box ul {
+      margin-left: 20px;
+    }
+
+    .rules-box li {
+      margin-bottom: 8px;
+    }
+
+    /* Hide puzzle container initially */
+    #mainContainer {
+      display: none;
     }
 
     /* Completion Screen Layout */
@@ -307,12 +350,29 @@
     </div>
   </div>
 
+  <!-- Start / Instructions Screen -->
+  <div class="container start-page" id="startContainer">
+    <h1>Puzzle 3: Key Word</h1>
+    
+    <div class="rules-box">
+      <p style="margin-bottom: 10px;"><strong>📜 Game Instructions:</strong></p>
+      <ul>
+        <li>Unscramble the scrambled letter tiles to reveal the hidden key word.</li>
+        <li>Letters <strong>'S'</strong>, <strong>'A'</strong>, and <strong>'S'</strong> are pre-filled as fixed hints.</li>
+        <li>Tap or drag the remaining letter tiles into the open slots.</li>
+        <li>The timer will start the moment you press <strong>Start Puzzle</strong>!</li>
+      </ul>
+    </div>
+
+    <button class="start-btn" onclick="startPuzzle()">Start Puzzle</button>
+  </div>
+
   <!-- Main Game Container -->
   <div class="container" id="mainContainer">
     <h1>Puzzle 3: Key Word</h1>
 
     <p class="instructions">
-      Unscramble the word to find the <strong> Key Word </strong><br>
+      Unscramble the word! <strong>'S'</strong>, <strong>'A'</strong>, and <strong>'S'</strong> are given as hints.<br>
       Tap or drag the remaining tiles into place!
     </p>
 
@@ -411,19 +471,28 @@
     // GAME LOGIC
     // -------------------------------------------------------------
     const targetWord = "STRANDS";
-    // Mobile/Player letters to place: T, R, N, D
     const movableLetters = ['T', 'R', 'N', 'D'];
 
+    const startContainer = document.getElementById('startContainer');
+    const mainContainer = document.getElementById('mainContainer');
     const tilesBank = document.getElementById('tilesBank');
     const slots = document.querySelectorAll('.slot');
     const messageDiv = document.getElementById('message');
-    const mainContainer = document.getElementById('mainContainer');
     const resultsContainer = document.getElementById('resultsContainer');
     const finalScoreDisplay = document.getElementById('finalScore');
     const controlsArea = document.getElementById('controlsArea');
 
-    let startTime = Date.now();
+    let startTime = 0;
     let wrongAttempts = 0;
+
+    function startPuzzle() {
+      // Hide Landing Instructions Page, Show Game Board
+      startContainer.style.display = 'none';
+      mainContainer.style.display = 'block';
+
+      // Initialize game and start timer
+      initGame();
+    }
 
     function initGame() {
       // Place pre-filled locked hint letters in slots 0 ('S'), 3 ('A'), 6 ('S')
@@ -449,6 +518,7 @@
         tilesBank.appendChild(tile);
       });
 
+      // Timer starts ONLY here when Start Puzzle is clicked
       startTime = Date.now();
     }
 
@@ -459,8 +529,6 @@
       tile.dataset.fixed = "true";
       parentSlot.appendChild(tile);
     }
-
-    initGame();
 
     function drag(ev) {
       ev.dataTransfer.setData("text", ev.target.id);
@@ -600,7 +668,7 @@
         const finalScore = Math.max(10, baseScore - (wrongAttempts * 20));
 
         messageDiv.className = 'message success';
-        messageDiv.innerHTML = '🎉 Good job! You found the "Key Word"!!!;
+        messageDiv.innerHTML = '🎉 Good job! You found the third letter: R';
 
         setTimeout(() => {
           mainContainer.style.display = 'none';
