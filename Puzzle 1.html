@@ -66,7 +66,7 @@
       position: relative;
       width: 100%;
       max-width: 650px;
-      margin: 0 auto 16px auto;
+      margin: 0 auto 12px auto;
       border-radius: 14px;
       overflow: hidden;
       border: 2px solid rgba(56, 189, 248, 0.4);
@@ -95,6 +95,42 @@
       background-repeat: no-repeat;
       z-index: 10;
     }
+
+    /* Directional Navigation Pad */
+    .nav-controls {
+      display: grid;
+      grid-template-columns: repeat(3, 48px);
+      grid-template-rows: repeat(2, 44px);
+      gap: 6px;
+      justify-content: center;
+      margin: 0 auto 16px auto;
+    }
+
+    .nav-btn {
+      background: rgba(14, 165, 233, 0.25);
+      border: 2px solid var(--seafoam);
+      color: #fff;
+      font-size: 1.2rem;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+      transition: background 0.1s, transform 0.1s;
+    }
+
+    .nav-btn:active {
+      background: var(--seafoam);
+      color: #0f172a;
+      transform: scale(0.95);
+    }
+
+    .nav-btn.up { grid-column: 2; grid-row: 1; }
+    .nav-btn.left { grid-column: 1; grid-row: 2; }
+    .nav-btn.down { grid-column: 2; grid-row: 2; }
+    .nav-btn.right { grid-column: 3; grid-row: 2; }
 
     /* Camouflaged Letter Styling */
     .hidden-c {
@@ -146,7 +182,7 @@
       box-shadow: 0 0 8px rgba(253, 224, 71, 0.5);
     }
 
-    button {
+    button.submit-btn {
       padding: 10px 20px;
       font-size: clamp(0.9rem, 3.5vw, 1rem);
       font-weight: bold;
@@ -159,8 +195,8 @@
       transition: transform 0.1s;
     }
 
-    button:hover { filter: brightness(1.1); }
-    button:active { transform: translateY(2px); }
+    button.submit-btn:hover { filter: brightness(1.1); }
+    button.submit-btn:active { transform: translateY(2px); }
 
     .message {
       font-weight: 800;
@@ -230,7 +266,7 @@
     <h1>Puzzle 1: Hidden Letter Hunt</h1>
 
     <p class="instructions">
-      Use your 🔍 <strong>magnifying glass</strong> to inspect the scene and find the hidden letter.<br>
+      Use touch/mouse or the <strong>arrow buttons</strong> to navigate your magnifying glass.<br>
       Type the letter in the box below and tap submit!
     </p>
 
@@ -284,10 +320,18 @@
       </svg>
     </div>
 
+    <!-- Directional Navigation Buttons -->
+    <div class="nav-controls">
+      <button class="nav-btn up" onpointerdown="startMove('up')" onpointerup="stopMove()" onpointerleave="stopMove()">▲</button>
+      <button class="nav-btn left" onpointerdown="startMove('left')" onpointerup="stopMove()" onpointerleave="stopMove()">◄</button>
+      <button class="nav-btn down" onpointerdown="startMove('down')" onpointerup="stopMove()" onpointerleave="stopMove()">▼</button>
+      <button class="nav-btn right" onpointerdown="startMove('right')" onpointerup="stopMove()" onpointerleave="stopMove()">►</button>
+    </div>
+
     <!-- Controls -->
     <div class="submit-box" id="submitBox">
       <input type="text" id="letterInput" maxlength="1" placeholder="?" />
-      <button id="submitBtn" onclick="checkAnswer()">Submit</button>
+      <button class="submit-btn" id="submitBtn" onclick="checkAnswer()">Submit</button>
     </div>
 
     <div class="message" id="message"></div>
@@ -316,6 +360,11 @@
     let wrongAttempts = 0;
     let svgDataUrl = "";
 
+    // Position coordinates for arrow navigation
+    let posX = 0;
+    let posY = 0;
+    let moveInterval = null;
+
     function prepareMagnifier() {
       const svgString = new XMLSerializer().serializeToString(mainSvg);
       const encodedSvg = encodeURIComponent(svgString);
@@ -326,47 +375,73 @@
     window.onload = () => {
       prepareMagnifier();
       startTime = Date.now();
+
+      // Initialize glass position in center of scene
+      const rect = sceneWrapper.getBoundingClientRect();
+      posX = rect.width / 2;
+      posY = rect.height / 2;
     };
 
-    function updateMagnifier(clientX, clientY) {
+    function updateMagnifierPos(x, y) {
       const rect = sceneWrapper.getBoundingClientRect();
-      const x = clientX - rect.left;
-      const y = clientY - rect.top;
 
-      if (x < 0 || x > rect.width || y < 0 || y > rect.height) {
-        magnifier.style.display = 'none';
-        return;
-      }
+      // Clamp position within boundaries
+      posX = Math.max(0, Math.min(x, rect.width));
+      posY = Math.max(0, Math.min(y, rect.height));
 
       magnifier.style.display = 'block';
 
       const magWidth = magnifier.offsetWidth;
       const magHeight = magnifier.offsetHeight;
 
-      magnifier.style.left = `${x - magWidth / 2}px`;
-      magnifier.style.top = `${y - magHeight / 2}px`;
+      magnifier.style.left = `${posX - magWidth / 2}px`;
+      magnifier.style.top = `${posY - magHeight / 2}px`;
 
       const zoom = 2.5;
       magnifier.style.backgroundSize = `${rect.width * zoom}px ${rect.height * zoom}px`;
-      magnifier.style.backgroundPosition = `-${x * zoom - magWidth / 2}px -${y * zoom - magHeight / 2}px`;
+      magnifier.style.backgroundPosition = `-${posX * zoom - magWidth / 2}px -${posY * zoom - magHeight / 2}px`;
     }
 
-    sceneWrapper.addEventListener('mousemove', (e) => updateMagnifier(e.clientX, e.clientY));
-    sceneWrapper.addEventListener('mouseleave', () => magnifier.style.display = 'none');
+    // Direct touch / mouse movement
+    function updateMagnifierFromEvent(clientX, clientY) {
+      const rect = sceneWrapper.getBoundingClientRect();
+      updateMagnifierPos(clientX - rect.left, clientY - rect.top);
+    }
+
+    sceneWrapper.addEventListener('mousemove', (e) => updateMagnifierFromEvent(e.clientX, e.clientY));
 
     sceneWrapper.addEventListener('touchstart', (e) => {
       if (e.touches.length > 0) {
-        updateMagnifier(e.touches[0].clientX, e.touches[0].clientY);
+        updateMagnifierFromEvent(e.touches[0].clientX, e.touches[0].clientY);
       }
     }, { passive: true });
 
     sceneWrapper.addEventListener('touchmove', (e) => {
       if (e.touches.length > 0) {
-        updateMagnifier(e.touches[0].clientX, e.touches[0].clientY);
+        updateMagnifierFromEvent(e.touches[0].clientX, e.touches[0].clientY);
       }
     }, { passive: true });
 
-    sceneWrapper.addEventListener('touchend', () => magnifier.style.display = 'none');
+    // Arrow Button Navigation Logic
+    function move(direction) {
+      const step = 8; // Pixel adjustment per frame
+      if (direction === 'up') posY -= step;
+      if (direction === 'down') posY += step;
+      if (direction === 'left') posX -= step;
+      if (direction === 'right') posX += step;
+
+      updateMagnifierPos(posX, posY);
+    }
+
+    function startMove(direction) {
+      move(direction);
+      clearInterval(moveInterval);
+      moveInterval = setInterval(() => move(direction), 30);
+    }
+
+    function stopMove() {
+      clearInterval(moveInterval);
+    }
 
     function triggerPenaltyAnimation() {
       const penaltyEl = document.createElement('div');
@@ -400,7 +475,7 @@
         const totalTimeSeconds = Math.floor((endTime - startTime) / 1000);
 
         // Tiered time-based scoring
-        let baseScore = 10; // Default for >50 seconds
+        let baseScore = 10;
         if (totalTimeSeconds <= 5) {
           baseScore = 100;
         } else if (totalTimeSeconds <= 10) {
