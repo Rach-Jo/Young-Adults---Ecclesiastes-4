@@ -218,21 +218,17 @@
       font-weight: 900;
       font-size: clamp(1.2rem, 4vw, 1.5rem);
       pointer-events: none;
-      animation: floatUp 1.2s forwards ease-out;
+      animation: floatUp 2.5s forwards ease-out;
       text-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
       z-index: 50;
     }
 
-    @keyframes floatUp {
-      0% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-      100% {
-        opacity: 0;
-        transform: translateY(-40px) scale(1.15);
-      }
+@keyframes floatUpSlow {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      70% { opacity: 1; transform: translateY(-35px) scale(1.1); }
+      100% { opacity: 0; transform: translateY(-55px) scale(1.15); }
     }
+
 
     /* Completion View Styling */
     .results-page {
