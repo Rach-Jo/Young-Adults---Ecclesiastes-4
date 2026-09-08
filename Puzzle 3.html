@@ -23,6 +23,12 @@
       touch-action: manipulation;
     }
 
+    /* Prevent mobile pull-to-refresh gestures */
+    html, body {
+      overscroll-behavior-y: contain;
+      overscroll-behavior: none;
+    }
+
     body {
       background: var(--nature-bg);
       color: var(--text);
@@ -205,12 +211,12 @@
       font-weight: 900;
       font-size: clamp(1.2rem, 4vw, 1.5rem);
       pointer-events: none;
-      animation: floatUp 1.2s forwards ease-out;
+      animation: floatUpSlow 2.5s forwards ease-out;
       text-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
       z-index: 50;
     }
 
-    @keyframes floatUp {
+    @keyframes floatUpSlow {
       0% {
         opacity: 1;
         transform: translateY(0) scale(1);
@@ -248,9 +254,58 @@
       font-weight: 800;
       color: #fff;
     }
+
+    /* PERMANENT WARNING OVERLAY (NO DISMISS BUTTON) */
+    .reload-warning-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.98);
+      backdrop-filter: blur(10px);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .reload-warning-box {
+      background: rgba(6, 78, 59, 0.95);
+      border: 3px solid var(--danger);
+      border-radius: 20px;
+      padding: 32px 24px;
+      max-width: 450px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 0 40px rgba(239, 68, 68, 0.6);
+    }
+
+    .reload-warning-box h2 {
+      color: var(--danger);
+      font-size: 1.8rem;
+      margin-bottom: 16px;
+    }
+
+    .reload-warning-box p {
+      color: #f8fafc;
+      font-size: 1.2rem;
+      font-weight: 700;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
+
+  <!-- Permanent Custom Warning Screen -->
+  <div class="reload-warning-modal" id="reloadModal">
+    <div class="reload-warning-box">
+      <h2>🚨 REFRESH LOCKED</h2>
+      <p>Please inform the instructor before reloading!</p>
+      <p style="font-size: 0.95rem; color: #a7f3d0; margin-top: 12px;">You must scan the QR code again freshly to restart the puzzle.</p>
+    </div>
+  </div>
 
   <!-- Main Game Container -->
   <div class="container" id="mainContainer">
@@ -296,6 +351,65 @@
   </div>
 
   <script>
+    // -------------------------------------------------------------
+    // PERMANENT RELOAD LOCKOUT LOGIC
+    // -------------------------------------------------------------
+    const reloadModal = document.getElementById('reloadModal');
+
+    function lockScreenWithMessage() {
+      sessionStorage.setItem('puzzle3_reloaded', 'true');
+      reloadModal.style.display = 'flex';
+    }
+
+    // Lock page on load if player already refreshed earlier
+    if (sessionStorage.getItem('puzzle3_reloaded') === 'true') {
+      lockScreenWithMessage();
+    }
+
+    // 1. Mobile Pull-to-Refresh Intercept
+    let startY = 0;
+    document.addEventListener('touchstart', (e) => {
+      startY = e.touches[0].pageY;
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+      const currentY = e.touches[0].pageY;
+      if (window.scrollY === 0 && currentY > startY + 40) {
+        if (e.cancelable) e.preventDefault();
+        lockScreenWithMessage();
+      }
+    }, { passive: false });
+
+    // 2. Desktop Keyboard Intercept (F5, Ctrl+R, Cmd+R)
+    window.addEventListener('keydown', (e) => {
+      if (
+        e.key === 'F5' || 
+        (e.ctrlKey && e.key.toLowerCase() === 'r') || 
+        (e.metaKey && e.key.toLowerCase() === 'r')
+      ) {
+        e.preventDefault();
+        lockScreenWithMessage();
+      }
+    });
+
+    // 3. Native Browser Unload Handler
+    const handleBeforeUnload = (e) => {
+      sessionStorage.setItem('puzzle3_reloaded', 'true');
+      e.preventDefault();
+      e.returnValue = 'Please inform the instructor before reloading!';
+      return 'Please inform the instructor before reloading!';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    // Register touch start listener for mobile beforeunload permissions
+    document.addEventListener('touchstart', () => {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    }, { once: true });
+
+    // -------------------------------------------------------------
+    // GAME LOGIC
+    // -------------------------------------------------------------
     const targetWord = "STRANDS";
     // Mobile/Player letters to place: T, R, N, D
     const movableLetters = ['T', 'R', 'N', 'D'];
