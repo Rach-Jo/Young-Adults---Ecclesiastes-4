@@ -24,7 +24,6 @@
       touch-action: manipulation;
     }
 
-    /* Prevent mobile pull-to-refresh gestures */
     html, body {
       overscroll-behavior-y: contain;
       overscroll-behavior: none;
@@ -69,7 +68,6 @@
       color: #bae6fd;
     }
 
-    /* Grid Area */
     .grid-container {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -135,7 +133,6 @@
       opacity: 0.85;
     }
 
-    /* Controls & Buttons */
     .controls-area {
       display: flex;
       justify-content: center;
@@ -182,7 +179,6 @@
       filter: grayscale(0.8);
     }
 
-    /* Top Right Badge on Hint Button */
     .badge {
       position: absolute;
       top: -6px;
@@ -211,7 +207,6 @@
     .error { color: #f87171; }
     .hint-msg { color: var(--sand-gold); }
 
-    /* Floating Penalty Text Animation */
     .floating-penalty {
       position: absolute;
       color: #ef4444;
@@ -224,17 +219,10 @@
     }
 
     @keyframes floatUpSlow {
-      0% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-      100% {
-        opacity: 0;
-        transform: translateY(-40px) scale(1.15);
-      }
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-40px) scale(1.15); }
     }
 
-    /* Completion View */
     .results-page {
       display: none;
       flex-direction: column;
@@ -262,7 +250,6 @@
       color: #fff;
     }
 
-    /* PERMANENT WARNING OVERLAY (NO DISMISS BUTTON) */
     .reload-warning-modal {
       display: none;
       position: fixed;
@@ -305,7 +292,6 @@
 </head>
 <body>
 
-  <!-- Permanent Custom Warning Screen -->
   <div class="reload-warning-modal" id="reloadModal">
     <div class="reload-warning-box">
       <h2>🚨 REFRESH LOCKED</h2>
@@ -314,7 +300,6 @@
     </div>
   </div>
 
-  <!-- Main Game Container -->
   <div class="container" id="mainContainer">
     <h1>Puzzle 4: Wise Advisor's Path</h1>
 
@@ -323,15 +308,11 @@
       You have 5 seconds to view the map before beginning!
     </p>
 
-    <!-- Grid View -->
     <div class="grid-container disabled-grid" id="gridContainer"></div>
 
-    <!-- Controls -->
     <div class="controls-area" id="controlsArea">
-      <!-- Initial Preview Button -->
       <button class="show-btn" id="initialShowBtn" onclick="startInitialPreview()"> SHOW</button>
 
-      <!-- Active Game Controls (hidden initially) -->
       <button class="show-btn" id="hintBtn" onclick="triggerMidGameShow()" style="display: none;">
          SHOW
         <span class="badge" id="hintBadge">2</span>
@@ -343,7 +324,6 @@
     <div class="message" id="message"></div>
   </div>
 
-  <!-- Results Page Container -->
   <div class="container results-page" id="resultsContainer">
     <h1>Puzzle Completed!</h1>
     <p class="instructions">The fourth letter unlocked is:</p>
@@ -352,9 +332,6 @@
   </div>
 
   <script>
-    // -------------------------------------------------------------
-    // PERMANENT RELOAD LOCKOUT LOGIC
-    // -------------------------------------------------------------
     const reloadModal = document.getElementById('reloadModal');
 
     function lockScreenWithMessage() {
@@ -362,12 +339,10 @@
       reloadModal.style.display = 'flex';
     }
 
-    // Lock page on load if player already refreshed earlier
     if (sessionStorage.getItem('puzzle4_reloaded') === 'true') {
       lockScreenWithMessage();
     }
 
-    // 1. Mobile Pull-to-Refresh Intercept
     let startY = 0;
     document.addEventListener('touchstart', (e) => {
       startY = e.touches[0].pageY;
@@ -381,7 +356,6 @@
       }
     }, { passive: false });
 
-    // 2. Desktop Keyboard Intercept (F5, Ctrl+R, Cmd+R)
     window.addEventListener('keydown', (e) => {
       if (
         e.key === 'F5' || 
@@ -393,7 +367,6 @@
       }
     });
 
-    // 3. Native Browser Unload Handler
     const handleBeforeUnload = (e) => {
       sessionStorage.setItem('puzzle4_reloaded', 'true');
       e.preventDefault();
@@ -403,19 +376,14 @@
 
     window.addEventListener('beforeunload', handleBeforeUnload);
 
-    // Register touch start listener for mobile beforeunload permissions
     document.addEventListener('touchstart', () => {
       window.addEventListener('beforeunload', handleBeforeUnload);
     }, { once: true });
 
-    // -------------------------------------------------------------
-    // GAME LOGIC
-    // -------------------------------------------------------------
     const GRID_SIZE = 7;
     const startPos = { r: 0, c: 0 };
     const goalPos = { r: 6, c: 6 };
 
-    // Secret 25-step solution path
     const solutionPath = [
       "0-0", "0-1", "0-2", "1-2", "2-2", "2-1", "2-0", 
       "3-0", "4-0", "5-0", "5-1", "5-2", "4-2", "4-3", 
@@ -469,13 +437,11 @@
       renderUserPath();
     }
 
-    // Step 1: Initial 5-second Map Preview
     function startInitialPreview() {
       initialShowBtn.style.display = 'none';
       messageDiv.className = 'message hint-msg';
       messageDiv.innerText = '📜 Memorize the path! (5 seconds)';
 
-      // Highlight path
       showSolutionPath(true);
 
       setTimeout(() => {
@@ -483,7 +449,6 @@
         gridContainer.classList.remove('disabled-grid');
         messageDiv.innerText = '';
         
-        // Switch controls & instructions to active gameplay mode
         instructionsText.innerHTML = `Navigate from <strong>START (S)</strong> to <strong>GOAL (G)</strong> by tapping adjacent tiles in sequence.<br>Click <strong>SHOW</strong> if you need another quick peak!`;
         hintBtn.style.display = 'inline-block';
         resetBtn.style.display = 'inline-block';
@@ -494,7 +459,6 @@
       }, 5000);
     }
 
-    // Mid-game 3-second Hint Preview
     function triggerMidGameShow() {
       if (hintsRemaining <= 0 || isViewingHint) return;
 
@@ -506,7 +470,6 @@
         hintBtn.disabled = true;
       }
 
-      // Automatically reset current user path on map view
       userPath = ["0-0"];
       renderUserPath();
 
@@ -541,7 +504,6 @@
 
       const lastKey = userPath[userPath.length - 1];
 
-      // Deselect if clicking the very same (latest selected) cell (unless it's the start tile)
       if (key === lastKey) {
         if (userPath.length > 1) {
           userPath.pop();
@@ -551,10 +513,8 @@
         return;
       }
 
-      // Prevent selecting a cell already visited deeper in the path
       if (userPath.includes(key)) return;
 
-      // Ensure adjacency rule for new moves
       const [lastR, lastC] = lastKey.split('-').map(Number);
       const isAdjacent = (Math.abs(lastR - r) + Math.abs(lastC - c)) === 1;
 
@@ -622,29 +582,17 @@
         const endTime = Date.now();
         const totalTimeSeconds = Math.floor((endTime - startTime) / 1000);
 
-        // Tiered time-based scoring
         let baseScore = 10;
-        if (totalTimeSeconds <= 10) {
-          baseScore = 100;
-        } else if (totalTimeSeconds <= 20) {
-          baseScore = 90;
-        } else if (totalTimeSeconds <= 30) {
-          baseScore = 80;
-        } else if (totalTimeSeconds <= 40) {
-          baseScore = 70;
-        } else if (totalTimeSeconds <= 50) {
-          baseScore = 60;
-        } else if (totalTimeSeconds <= 60) {
-          baseScore = 50;
-        } else if (totalTimeSeconds <= 70) {
-          baseScore = 40;
-        } else if (totalTimeSeconds <= 80) {
-          baseScore = 30;
-        } else if (totalTimeSeconds <= 90) {
-          baseScore = 20;
-        } else {
-          baseScore = 10;
-        }
+        if (totalTimeSeconds <= 10) baseScore = 100;
+        else if (totalTimeSeconds <= 20) baseScore = 90;
+        else if (totalTimeSeconds <= 30) baseScore = 80;
+        else if (totalTimeSeconds <= 40) baseScore = 70;
+        else if (totalTimeSeconds <= 50) baseScore = 60;
+        else if (totalTimeSeconds <= 60) baseScore = 50;
+        else if (totalTimeSeconds <= 70) baseScore = 40;
+        else if (totalTimeSeconds <= 80) baseScore = 30;
+        else if (totalTimeSeconds <= 90) baseScore = 20;
+        else baseScore = 10;
 
         const finalScore = Math.max(10, baseScore - (wrongAttempts * 20));
 
