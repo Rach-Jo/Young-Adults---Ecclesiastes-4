@@ -68,6 +68,58 @@
       color: #bae6fd;
     }
 
+    /* Start / Instructions Landing Page */
+    .start-page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 10px;
+    }
+
+    .rules-box {
+      background: rgba(15, 23, 42, 0.6);
+      border: 2px solid rgba(56, 189, 248, 0.4);
+      border-radius: 12px;
+      padding: 18px;
+      text-align: left;
+      font-size: clamp(0.85rem, 3.2vw, 1rem);
+      line-height: 1.6;
+      color: #e2e8f0;
+      margin: 10px 0;
+    }
+
+    .rules-box ul {
+      margin-left: 20px;
+    }
+
+    .rules-box li {
+      margin-bottom: 8px;
+    }
+
+    .start-btn {
+      padding: 14px 36px;
+      font-size: clamp(1.1rem, 4vw, 1.3rem);
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #fde047 0%, #d97706 100%);
+      color: #0f172a;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #b45309;
+      transition: transform 0.1s, filter 0.2s;
+      margin-top: 10px;
+    }
+
+    .start-btn:hover { filter: brightness(1.1); }
+    .start-btn:active { transform: translateY(2px); }
+
+    /* Hide puzzle container initially */
+    #gameContainer {
+      display: none;
+    }
+
     /* SVG Scene & Magnifier Wrapper */
     .scene-wrapper {
       position: relative;
@@ -326,6 +378,23 @@
     </div>
   </div>
 
+  <!-- Start / Instructions Screen -->
+  <div class="container start-page" id="startContainer">
+    <h1>Puzzle 1: Hidden Letter Hunt</h1>
+    
+    <div class="rules-box">
+      <p style="margin-bottom: 10px;"><strong>📜 Game Instructions:</strong></p>
+      <ul>
+        <li>A secret letter is camouflaged somewhere in the nature scene.</li>
+        <li>Use touch dragging or the directional arrow keys to move your magnifying glass around.</li>
+        <li>Once you spot the hidden letter, enter it in the box and tap <strong>Submit</strong>!</li>
+        <li>The timer will start the moment you press <strong>Start Puzzle</strong>!</li>
+      </ul>
+    </div>
+
+    <button class="start-btn" onclick="startPuzzle()">Start Puzzle</button>
+  </div>
+
   <!-- Game Page Container -->
   <div class="container" id="gameContainer">
     <h1>Puzzle 1: Hidden Letter Hunt</h1>
@@ -470,17 +539,18 @@
     // -------------------------------------------------------------
     // GAME LOGIC
     // -------------------------------------------------------------
+    const startContainer = document.getElementById('startContainer');
+    const gameContainer = document.getElementById('gameContainer');
     const sceneWrapper = document.getElementById('sceneWrapper');
     const magnifier = document.getElementById('magnifier');
     const mainSvg = document.getElementById('mainSvg');
     const letterInput = document.getElementById('letterInput');
     const messageDiv = document.getElementById('message');
-    const gameContainer = document.getElementById('gameContainer');
     const resultsContainer = document.getElementById('resultsContainer');
     const submitBox = document.getElementById('submitBox');
     const finalScoreDisplay = document.getElementById('finalScore');
 
-    let startTime = Date.now();
+    let startTime = 0;
     let wrongAttempts = 0;
     let svgDataUrl = "";
 
@@ -489,6 +559,23 @@
     let posY = 0;
     let moveInterval = null;
 
+    function startPuzzle() {
+      // Hide Landing Instructions Page, Show Game Board
+      startContainer.style.display = 'none';
+      gameContainer.style.display = 'block';
+
+      // Prepare magnifier graphics
+      prepareMagnifier();
+
+      // Initialize glass position in center of scene
+      const rect = sceneWrapper.getBoundingClientRect();
+      posX = rect.width / 2;
+      posY = rect.height / 2;
+
+      // Timer starts ONLY when player presses Start Puzzle
+      startTime = Date.now();
+    }
+
     function prepareMagnifier() {
       const svgString = new XMLSerializer().serializeToString(mainSvg);
       const encodedSvg = encodeURIComponent(svgString);
@@ -496,19 +583,11 @@
       magnifier.style.backgroundImage = svgDataUrl;
     }
 
-    window.onload = () => {
-      prepareMagnifier();
-      startTime = Date.now();
-
-      // Initialize glass position in center of scene
-      const rect = sceneWrapper.getBoundingClientRect();
-      posX = rect.width / 2;
-      posY = rect.height / 2;
-    };
-
     // Keep magnifier rendering proportionate if screen resizes/rotates
     window.onresize = () => {
-      prepareMagnifier();
+      if (gameContainer.style.display === 'block') {
+        prepareMagnifier();
+      }
     };
 
     function updateMagnifierPos(x, y) {
