@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Puzzle 2: Nature Testament Balance</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Puzzle 2: Books of the Bible Balance</title>
   <style>
     :root {
       --nature-bg: linear-gradient(135deg, #064e3b 0%, #022c22 50%, #0f172a 100%);
@@ -19,7 +19,9 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
 
     body {
@@ -29,75 +31,55 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      padding: 20px;
+      padding: 12px;
       position: relative;
-    }
-
-    /* Penalty Timer Banner */
-    .timer-banner {
-      position: absolute;
-      top: 15px;
-      right: 20px;
-      background: rgba(127, 29, 29, 0.9);
-      border: 3px solid var(--danger);
-      border-radius: 12px;
-      padding: 10px 20px;
-      font-weight: 800;
-      color: #fca5a5;
-      font-size: 1.2rem;
-      display: none;
-      box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
-      z-index: 100;
-      animation: pulse 1s infinite alternate;
-    }
-
-    @keyframes pulse {
-      from { transform: scale(1); }
-      to { transform: scale(1.05); }
+      overflow-x: hidden;
     }
 
     .container {
       background: var(--card-bg);
       backdrop-filter: blur(12px);
       border: 2px solid rgba(52, 211, 153, 0.3);
-      border-radius: 24px;
-      padding: 25px 30px;
-      max-width: 1100px;
+      border-radius: 20px;
+      padding: 20px 15px;
+      max-width: 1000px;
       width: 100%;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
       text-align: center;
+      position: relative;
     }
 
     h1 {
       color: var(--gold);
-      font-size: 2.2rem;
+      font-size: clamp(1.4rem, 4.5vw, 2.2rem);
       text-shadow: 0 2px 10px rgba(251, 191, 36, 0.4);
       margin-bottom: 6px;
     }
 
     .instructions {
-      margin-bottom: 20px;
-      font-size: 1rem;
-      line-height: 1.4;
+      margin-bottom: 16px;
+      font-size: clamp(0.85rem, 3.2vw, 1rem);
+      line-height: 1.35;
       color: #a7f3d0;
     }
 
-    /* Side-by-Side Main Layout */
+    /* Side-by-Side Main Layout (Desktop) / Vertical Stack (Mobile) */
     .game-layout {
       display: flex;
-      gap: 25px;
+      gap: 16px;
       align-items: stretch;
       justify-content: center;
+      flex-direction: row;
     }
 
-    /* LEFT SIDE: Scale Stage Centered */
+    /* LEFT SIDE: Scale Stage */
     .scale-stage {
       flex: 1.4;
       position: relative;
-      height: 440px;
+      height: 380px;
       background: radial-gradient(circle, rgba(15, 23, 42, 0.8) 0%, rgba(2, 44, 34, 0.9) 100%);
       border: 2px solid #059669;
-      border-radius: 20px;
+      border-radius: 18px;
       overflow: hidden;
       display: flex;
       justify-content: center;
@@ -117,9 +99,9 @@
     .fulcrum {
       width: 0;
       height: 0;
-      border-left: 30px solid transparent;
-      border-right: 30px solid transparent;
-      border-bottom: 55px solid #854d0e;
+      border-left: 24px solid transparent;
+      border-right: 24px solid transparent;
+      border-bottom: 45px solid #854d0e;
       position: absolute;
       top: 52%;
       z-index: 2;
@@ -128,20 +110,20 @@
 
     .beam-assembly {
       position: absolute;
-      top: calc(52% - 14px);
-      width: 380px;
-      height: 14px;
+      top: calc(52% - 12px);
+      width: clamp(280px, 80%, 360px);
+      height: 12px;
       background: linear-gradient(90deg, #b45309, #fef3c7, #b45309);
       border-radius: 8px;
       transform-origin: center center;
-      transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       z-index: 3;
       box-shadow: 0 4px 12px rgba(0,0,0,0.6);
     }
 
     .pan-container {
       position: absolute;
-      top: 7px;
+      top: 6px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -151,14 +133,14 @@
     .pan-container.right { right: -10px; }
 
     .pan-badge {
-      font-size: 0.75rem;
+      font-size: clamp(0.65rem, 2.5vw, 0.75rem);
       font-weight: 800;
-      padding: 4px 10px;
-      border-radius: 20px;
+      padding: 3px 8px;
+      border-radius: 12px;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
       margin-bottom: 4px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
       white-space: nowrap;
     }
 
@@ -166,26 +148,26 @@
     .right .pan-badge { background: var(--nt-color); color: #000; }
 
     .hanger {
-      width: 3px;
-      height: 35px;
+      width: 2px;
+      height: 28px;
       background: #d97706;
     }
 
     .pan {
-      width: 155px;
-      min-height: 150px;
-      border: 3px solid #34d399;
+      width: clamp(120px, 28vw, 150px);
+      min-height: 140px;
+      border: 2px solid #34d399;
       border-top: none;
-      border-radius: 0 0 24px 24px;
+      border-radius: 0 0 20px 20px;
       background: rgba(6, 78, 59, 0.85);
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 4px;
       justify-content: flex-start;
       align-items: center;
-      padding: 8px;
-      transition: all 0.2s ease;
-      box-shadow: inset 0 0 15px rgba(0,0,0,0.6);
+      padding: 6px;
+      transition: background 0.2s, border-color 0.2s;
+      box-shadow: inset 0 0 12px rgba(0,0,0,0.6);
     }
 
     .pan.highlight {
@@ -193,26 +175,32 @@
       border-color: var(--gold);
     }
 
-    /* RIGHT SIDE: Vertical Word Bank */
+    /* RIGHT SIDE: Vertical / Horizontal Word Bank Panel */
     .word-bank-panel {
       flex: 0.8;
       background: rgba(15, 23, 42, 0.7);
       border: 2px dashed #059669;
-      border-radius: 20px;
-      padding: 15px;
+      border-radius: 18px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      height: 440px;
+      height: 380px;
       overflow-y: auto;
+      transition: border-color 0.2s;
+    }
+
+    .word-bank-panel.highlight {
+      border-color: var(--gold);
+      background: rgba(15, 23, 42, 0.85);
     }
 
     .bank-title {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 800;
       color: var(--gold);
       text-transform: uppercase;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       letter-spacing: 1px;
     }
 
@@ -220,53 +208,48 @@
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
     /* Nature Word Chips */
     .block {
       width: 100%;
       padding: 8px 10px;
-      border-radius: 10px;
+      border-radius: 8px;
       font-weight: 700;
-      font-size: 0.9rem;
+      font-size: clamp(0.8rem, 3vw, 0.9rem);
       cursor: grab;
       user-select: none;
       color: #ffffff;
       text-align: center;
-      box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+      box-shadow: 0 3px 0 rgba(0,0,0,0.3);
       transition: transform 0.1s;
     }
 
-    .block:hover { transform: translateY(-2px); }
-    .block:active { cursor: grabbing; transform: translateY(2px); }
+    .block:active { cursor: grabbing; transform: scale(0.96); }
 
-    /* Compact Mini Variant Inside Scale Pans */
+    /* Compact Variant Inside Scale Pans */
     .pan .block {
       padding: 4px 6px;
-      font-size: 0.75rem;
+      font-size: clamp(0.7rem, 2.5vw, 0.78rem);
       box-shadow: none;
       background: #022c22 !important;
       border: 1px solid #34d399;
     }
 
-    .disabled-input {
-      pointer-events: none;
-      filter: grayscale(0.8);
-    }
-
-    /* Action Controls & Results */
+    /* Controls & Messaging */
     .controls-area {
-      margin-top: 20px;
+      margin-top: 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      position: relative;
     }
 
-    button {
+    button.submit-btn {
       padding: 12px 32px;
-      font-size: 1.1rem;
+      font-size: clamp(1rem, 3.8vw, 1.1rem);
       font-weight: bold;
       border: none;
       border-radius: 12px;
@@ -277,35 +260,101 @@
       transition: transform 0.1s;
     }
 
-    button:hover { filter: brightness(1.1); }
-    button:active { transform: translateY(2px); box-shadow: 0 2px 0 #047857; }
+    button.submit-btn:hover { filter: brightness(1.1); }
+    button.submit-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #047857; }
 
     .message {
       font-weight: 800;
-      font-size: 1.3rem;
-      min-height: 35px;
+      font-size: clamp(0.95rem, 3.5vw, 1.2rem);
+      min-height: 28px;
     }
 
     .success { color: #34d399; text-shadow: 0 0 10px rgba(52, 211, 153, 0.5); }
     .error { color: #f87171; }
+
+    /* Floating Penalty Text Animation */
+    .floating-penalty {
+      position: absolute;
+      color: #ef4444;
+      font-weight: 900;
+      font-size: clamp(1.2rem, 4vw, 1.5rem);
+      pointer-events: none;
+      animation: floatUp 1.2s forwards ease-out;
+      text-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+      z-index: 50;
+    }
+
+    @keyframes floatUp {
+      0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-40px) scale(1.15);
+      }
+    }
+
+    /* Completion Screen Layout */
+    .results-page {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 10px;
+    }
+
+    .letter-display {
+      font-size: clamp(3rem, 10vw, 4.5rem);
+      font-weight: 900;
+      color: var(--gold);
+      text-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+      margin: 6px 0;
+    }
+
+    .score-badge {
+      background: rgba(16, 185, 129, 0.2);
+      border: 2px solid #34d399;
+      border-radius: 12px;
+      padding: 10px 20px;
+      font-size: clamp(1.1rem, 4vw, 1.5rem);
+      font-weight: 800;
+      color: #fff;
+    }
+
+    /* Mobile Responsive Optimizations */
+    @media (max-width: 768px) {
+      .game-layout {
+        flex-direction: column;
+      }
+      .scale-stage {
+        height: 310px;
+      }
+      .word-bank-panel {
+        height: auto;
+        max-height: 220px;
+      }
+      .blocks-inventory {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <!-- Penalty Clock -->
-  <div class="timer-banner" id="timerBanner">
-    🚨 Penalty Lockout: <span id="timerVal">10</span>s
-  </div>
-
+  <!-- Game Page Container -->
   <div class="container" id="mainContainer">
     <h1>Puzzle 2: The Books of the BIBLE</h1>
 
     <p class="instructions">
       Place <strong>5 Old Testament books</strong> in the Left Pan and <strong>5 New Testament books</strong> in the Right Pan.<br>
-      <em>wrong balance triggers a 10-second penalty!</em>
+      Tap or drag the chips to move them into position!
     </p>
 
-    <!-- Side-by-Side Game Layout -->
+    <!-- Game Layout -->
     <div class="game-layout">
       
       <!-- LEFT: Balance Scale Stage -->
@@ -332,8 +381,8 @@
         </div>
       </div>
 
-      <!-- RIGHT: Vertical Word List -->
-      <div class="word-bank-panel" ondragover="allowDrop(event)" ondrop="returnToInventory(event)">
+      <!-- RIGHT: Word List Inventory -->
+      <div class="word-bank-panel" id="wordBankPanel" ondragover="allowDrop(event)" ondragleave="clearHighlight(event)" ondrop="returnToInventory(event)">
         <div class="bank-title">🌿 Word Bank</div>
         <div class="blocks-inventory" id="inventory">
           <!-- Rendered dynamically -->
@@ -343,10 +392,18 @@
     </div>
 
     <!-- Controls & Message Display -->
-    <div class="controls-area">
-      <button id="checkBtn" onclick="checkAnswer()">Check Balance</button>
+    <div class="controls-area" id="controlsArea">
+      <button class="submit-btn" id="checkBtn" onclick="checkAnswer()">Check Balance</button>
       <div class="message" id="message"></div>
     </div>
+  </div>
+
+  <!-- Results Page Container -->
+  <div class="container results-page" id="resultsContainer">
+    <h1>Puzzle Completed!</h1>
+    <p class="instructions">The second letter unlocked is:</p>
+    <div class="letter-display">"O"</div>
+    <div class="score-badge">Your Points: <span id="finalScore">0</span></div>
   </div>
 
   <script>
@@ -370,14 +427,17 @@
     const inventory = document.getElementById('inventory');
     const leftPan = document.getElementById('leftPan');
     const rightPan = document.getElementById('rightPan');
+    const wordBankPanel = document.getElementById('wordBankPanel');
     const beam = document.getElementById('beam');
     const messageDiv = document.getElementById('message');
-    const timerBanner = document.getElementById('timerBanner');
-    const timerVal = document.getElementById('timerVal');
     const mainContainer = document.getElementById('mainContainer');
-    const checkBtn = document.getElementById('checkBtn');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const finalScoreDisplay = document.getElementById('finalScore');
+    const controlsArea = document.getElementById('controlsArea');
 
-    let penaltyActive = false;
+    let startTime = Date.now();
+    let wrongAttempts = 0;
+    let selectedBlock = null;
 
     // Vibrant Nature Color Palette for Chips
     const colors = ['#ec4899', '#d97706', '#10b981', '#0284c7', '#8b5cf6', '#ef4444'];
@@ -392,22 +452,44 @@
         block.innerText = item.name;
         block.dataset.type = item.type;
         block.style.background = colors[index % colors.length];
+
+        // Standard Drag and Drop
         block.ondragstart = drag;
+
+        // Mobile Touch & Tap Movement
+        block.addEventListener('click', () => handleBlockTap(block));
+
         inventory.appendChild(block);
       });
+
+      startTime = Date.now();
     }
 
     initBlocks();
 
+    // Tap-to-move feature for mobile responsiveness
+    function handleBlockTap(block) {
+      if (block.parentElement === leftPan || block.parentElement === rightPan) {
+        inventory.appendChild(block);
+      } else {
+        if (leftPan.children.length < 5) {
+          leftPan.appendChild(block);
+        } else if (rightPan.children.length < 5) {
+          rightPan.appendChild(block);
+        } else {
+          inventory.appendChild(block);
+        }
+      }
+      updateScaleTilt();
+    }
+
     function drag(ev) {
-      if (penaltyActive) return;
       ev.dataTransfer.setData("text", ev.target.id);
     }
 
     function allowDrop(ev) {
-      if (penaltyActive) return;
       ev.preventDefault();
-      if (ev.currentTarget.classList.contains('pan')) {
+      if (ev.currentTarget.classList.contains('pan') || ev.currentTarget.classList.contains('word-bank-panel')) {
         ev.currentTarget.classList.add('highlight');
       }
     }
@@ -417,7 +499,6 @@
     }
 
     function dropBlock(ev, panSide) {
-      if (penaltyActive) return;
       ev.preventDefault();
       leftPan.classList.remove('highlight');
       rightPan.classList.remove('highlight');
@@ -433,8 +514,8 @@
     }
 
     function returnToInventory(ev) {
-      if (penaltyActive) return;
       ev.preventDefault();
+      wordBankPanel.classList.remove('highlight');
       const blockId = ev.dataTransfer.getData("text");
       const blockEl = document.getElementById(blockId);
 
@@ -451,39 +532,31 @@
       if (leftCount === rightCount) {
         beam.style.transform = 'rotate(0deg)';
       } else if (leftCount > rightCount) {
-        beam.style.transform = `rotate(${-Math.min(12, (leftCount - rightCount) * 3)}deg)`;
+        beam.style.transform = `rotate(${-Math.min(12, (leftCount - rightCount) * 3.5)}deg)`;
       } else {
-        beam.style.transform = `rotate(${Math.min(12, (rightCount - leftCount) * 3)}deg)`;
+        beam.style.transform = `rotate(${Math.min(12, (rightCount - leftCount) * 3.5)}deg)`;
       }
     }
 
-    function startPenaltyClock() {
-      penaltyActive = true;
-      let secondsLeft = 10;
-      
-      timerBanner.style.display = 'block';
-      timerVal.innerText = secondsLeft;
-      mainContainer.classList.add('disabled-input');
-      checkBtn.disabled = true;
+    function triggerPenaltyAnimation() {
+      const penaltyEl = document.createElement('div');
+      penaltyEl.className = 'floating-penalty';
+      penaltyEl.innerText = '-20 points';
 
-      const interval = setInterval(() => {
-        secondsLeft--;
-        timerVal.innerText = secondsLeft;
+      const rect = controlsArea.getBoundingClientRect();
+      const containerRect = mainContainer.getBoundingClientRect();
 
-        if (secondsLeft <= 0) {
-          clearInterval(interval);
-          penaltyActive = false;
-          timerBanner.style.display = 'none';
-          mainContainer.classList.remove('disabled-input');
-          checkBtn.disabled = false;
-          messageDiv.innerText = '';
-        }
-      }, 1000);
+      penaltyEl.style.left = `${rect.left - containerRect.left + rect.width / 2 - 40}px`;
+      penaltyEl.style.top = `${rect.top - containerRect.top - 15}px`;
+
+      mainContainer.appendChild(penaltyEl);
+
+      setTimeout(() => {
+        penaltyEl.remove();
+      }, 1200);
     }
 
     function checkAnswer() {
-      if (penaltyActive) return;
-
       const leftBlocks = Array.from(leftPan.children);
       const rightBlocks = Array.from(rightPan.children);
 
@@ -491,12 +564,50 @@
       const rightCorrect = rightBlocks.length === 5 && rightBlocks.every(b => b.dataset.type === 'NT');
 
       if (leftCorrect && rightCorrect) {
+        const endTime = Date.now();
+        const totalTimeSeconds = Math.floor((endTime - startTime) / 1000);
+
+        // Tiered time-based scoring system
+        let baseScore = 10;
+        if (totalTimeSeconds <= 10) {
+          baseScore = 100;
+        } else if (totalTimeSeconds <= 20) {
+          baseScore = 90;
+        } else if (totalTimeSeconds <= 30) {
+          baseScore = 80;
+        } else if (totalTimeSeconds <= 40) {
+          baseScore = 70;
+        } else if (totalTimeSeconds <= 50) {
+          baseScore = 60;
+        } else if (totalTimeSeconds <= 60) {
+          baseScore = 50;
+        } else if (totalTimeSeconds <= 70) {
+          baseScore = 40;
+        } else if (totalTimeSeconds <= 80) {
+          baseScore = 30;
+        } else if (totalTimeSeconds <= 90) {
+          baseScore = 20;
+        } else {
+          baseScore = 10;
+        }
+
+        // Penalty for wrong attempts with a minimum score floor of 10 points
+        const finalScore = Math.max(10, baseScore - (wrongAttempts * 20));
+
         messageDiv.className = 'message success';
-        messageDiv.innerHTML = '🎉 Good job! The unlocked letter is O!';
+        messageDiv.innerHTML = '🎉 Good job! You found the second letter: O';
+
+        setTimeout(() => {
+          mainContainer.style.display = 'none';
+          resultsContainer.style.display = 'flex';
+          finalScoreDisplay.innerText = finalScore;
+        }, 1500);
+
       } else {
+        wrongAttempts++;
         messageDiv.className = 'message error';
-        messageDiv.innerText = '❌ Unbalanced or wrong choices! 10-second penalty applied.';
-        startPenaltyClock();
+        messageDiv.innerText = '❌ Unbalanced or incorrect choices! Try again.';
+        triggerPenaltyAnimation();
       }
     }
   </script>
