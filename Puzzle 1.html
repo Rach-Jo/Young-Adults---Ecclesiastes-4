@@ -325,7 +325,7 @@
 
     window.onload = () => {
       prepareMagnifier();
-      startTime = Date.now(); // Start puzzle timer
+      startTime = Date.now();
     };
 
     function updateMagnifier(clientX, clientY) {
@@ -368,7 +368,6 @@
 
     sceneWrapper.addEventListener('touchend', () => magnifier.style.display = 'none');
 
-    // Trigger floating -20 points text on wrong attempt
     function triggerPenaltyAnimation() {
       const penaltyEl = document.createElement('div');
       penaltyEl.className = 'floating-penalty';
@@ -400,8 +399,8 @@
         const endTime = Date.now();
         const totalTimeSeconds = Math.floor((endTime - startTime) / 1000);
 
-        // Base score calculation based on time
-        let baseScore = 50;
+        // Tiered time-based scoring
+        let baseScore = 10; // Default for >50 seconds
         if (totalTimeSeconds <= 5) {
           baseScore = 100;
         } else if (totalTimeSeconds <= 10) {
@@ -410,12 +409,23 @@
           baseScore = 80;
         } else if (totalTimeSeconds <= 20) {
           baseScore = 70;
+        } else if (totalTimeSeconds <= 25) {
+          baseScore = 60;
+        } else if (totalTimeSeconds <= 30) {
+          baseScore = 50;
+        } else if (totalTimeSeconds <= 35) {
+          baseScore = 40;
+        } else if (totalTimeSeconds <= 40) {
+          baseScore = 30;
+        } else if (totalTimeSeconds <= 45) {
+          baseScore = 20;
+        } else if (totalTimeSeconds <= 50) {
+          baseScore = 10;
         }
 
-        // Apply wrong attempt penalty
-        const finalScore = baseScore - (wrongAttempts * 20);
+        // Apply wrong attempt penalty with a minimum score floor of 10
+        const finalScore = Math.max(10, baseScore - (wrongAttempts * 20));
 
-        // Render success state briefly before moving to results page
         messageDiv.className = 'message success';
         messageDiv.innerText = 'Good job in finding the first letter';
 
