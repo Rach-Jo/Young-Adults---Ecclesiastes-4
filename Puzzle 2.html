@@ -241,7 +241,7 @@
       color: #fff;
     }
 
-    /* CUSTOM RELOAD WARNING MODAL OVERLAY */
+    /* PERMANENT WARNING OVERLAY (NO DISMISS BUTTON) */
     .reload-warning-modal {
       display: none;
       position: fixed;
@@ -249,8 +249,8 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(15, 23, 42, 0.95);
-      backdrop-filter: blur(8px);
+      background: rgba(15, 23, 42, 0.98);
+      backdrop-filter: blur(10px);
       z-index: 9999;
       justify-content: center;
       align-items: center;
@@ -261,42 +261,35 @@
       background: rgba(30, 27, 75, 0.95);
       border: 3px solid var(--danger);
       border-radius: 20px;
-      padding: 24px;
+      padding: 32px 24px;
       max-width: 450px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 0 30px rgba(239, 68, 68, 0.5);
+      box-shadow: 0 0 40px rgba(239, 68, 68, 0.6);
     }
 
     .reload-warning-box h2 {
       color: var(--danger);
-      font-size: 1.5rem;
-      margin-bottom: 12px;
+      font-size: 1.8rem;
+      margin-bottom: 16px;
     }
 
     .reload-warning-box p {
       color: #f8fafc;
-      font-size: 1.1rem;
-      font-weight: 600;
+      font-size: 1.2rem;
+      font-weight: 700;
       line-height: 1.5;
-      margin-bottom: 20px;
-    }
-
-    .reload-warning-box button {
-      background: var(--danger);
-      padding: 10px 20px;
     }
   </style>
 </head>
 <body>
 
-  <!-- Custom Warning Modal -->
+  <!-- Permanent Custom Warning Screen -->
   <div class="reload-warning-modal" id="reloadModal">
     <div class="reload-warning-box">
-      <h2>🚨 WARNING</h2>
+      <h2>🚨 REFRESH LOCKED</h2>
       <p>Please inform the instructor before reloading!</p>
-      <p style="font-size: 0.9rem; color: #c7d2fe;">You must scan the QR code again freshly to restart the puzzle.</p>
-      <button onclick="closeReloadModal()">Return to Puzzle</button>
+      <p style="font-size: 0.95rem; color: #c7d2fe; margin-top: 12px;">You must scan the QR code again freshly to restart the puzzle.</p>
     </div>
   </div>
 
@@ -344,16 +337,19 @@
 
   <script>
     // -------------------------------------------------------------
-    // DESKTOP & MOBILE RELOAD INTERCEPTION
+    // PERMANENT RELOAD LOCKOUT LOGIC
     // -------------------------------------------------------------
     const reloadModal = document.getElementById('reloadModal');
 
-    function showReloadModal() {
+    function lockScreenWithMessage() {
+      // Set persistent flag so refreshing repeatedly keeps the block screen active
+      sessionStorage.setItem('puzzle_reloaded', 'true');
       reloadModal.style.display = 'flex';
     }
 
-    function closeReloadModal() {
-      reloadModal.style.display = 'none';
+    // Check on page load if user already refreshed previously
+    if (sessionStorage.getItem('puzzle_reloaded') === 'true') {
+      lockScreenWithMessage();
     }
 
     // 1. Mobile Pull-to-Refresh Intercept
@@ -364,10 +360,9 @@
 
     document.addEventListener('touchmove', (e) => {
       const currentY = e.touches[0].pageY;
-      // If user swipes down while at top of page (mobile pull-to-refresh)
       if (window.scrollY === 0 && currentY > startY + 40) {
         if (e.cancelable) e.preventDefault();
-        showReloadModal();
+        lockScreenWithMessage();
       }
     }, { passive: false });
 
@@ -379,12 +374,13 @@
         (e.metaKey && e.key.toLowerCase() === 'r')
       ) {
         e.preventDefault();
-        showReloadModal();
+        lockScreenWithMessage();
       }
     });
 
-    // 3. Native Browser Unload Fallback Confirmation (Mobile & Desktop)
+    // 3. Native Browser Unload Handler
     const handleBeforeUnload = (e) => {
+      sessionStorage.setItem('puzzle_reloaded', 'true');
       e.preventDefault();
       e.returnValue = 'Please inform the instructor before reloading!';
       return 'Please inform the instructor before reloading!';
@@ -392,7 +388,7 @@
 
     window.addEventListener('beforeunload', handleBeforeUnload);
 
-    // Force register touch interaction for mobile browser security requirements
+    // Ensure mobile browser registers user activity to trigger beforeunload
     document.addEventListener('touchstart', () => {
       window.addEventListener('beforeunload', handleBeforeUnload);
     }, { once: true });
