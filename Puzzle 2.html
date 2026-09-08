@@ -89,6 +89,7 @@
       padding: 14px;
       min-height: 70px;
       margin-bottom: 20px;
+      transition: background-color 0.2s, border-color 0.2s;
     }
 
     /* Baskets Layout */
@@ -127,6 +128,11 @@
       background: rgba(49, 27, 146, 0.8);
     }
 
+    .basket.drag-over, .book-pool.drag-over {
+      border-color: var(--gold);
+      background: rgba(129, 140, 248, 0.25);
+    }
+
     .basket-items {
       display: flex;
       flex-wrap: wrap;
@@ -146,12 +152,28 @@
       font-weight: 700;
       border: 1px solid rgba(255, 255, 255, 0.2);
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-      cursor: pointer;
+      cursor: grab;
       user-select: none;
-      transition: transform 0.15s, background-color 0.15s;
+      transition: transform 0.15s, background-color 0.15s, opacity 0.2s;
+      touch-action: none;
     }
 
     .book-pill:active { transform: scale(0.95); }
+
+    .book-pill.dragging {
+      opacity: 0.4;
+      cursor: grabbing;
+    }
+
+    /* Drag Ghost Element */
+    .drag-ghost {
+      position: fixed;
+      pointer-events: none;
+      z-index: 10000;
+      transform: translate(-50%, -50%) scale(1.05);
+      opacity: 0.9;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
 
     /* Controls & Buttons */
     .controls-area {
@@ -298,7 +320,7 @@
     <h1>Puzzle 2: Testament Sorting</h1>
 
     <p class="instructions">
-      Tap a <strong>Testament Basket</strong> below to select it, then tap book titles to send them into that basket!
+      <strong>Drag & Drop</strong> books into their baskets, or <strong>tap</strong> a basket to highlight it and tap a book to send it there!
     </p>
 
     <!-- Unsorted Books Pool -->
@@ -342,12 +364,10 @@
     const reloadModal = document.getElementById('reloadModal');
 
     function lockScreenWithMessage() {
-      // Set persistent flag so refreshing repeatedly keeps the block screen active
       sessionStorage.setItem('puzzle_reloaded', 'true');
       reloadModal.style.display = 'flex';
     }
 
-    // Check on page load if user already refreshed previously
     if (sessionStorage.getItem('puzzle_reloaded') === 'true') {
       lockScreenWithMessage();
     }
@@ -388,13 +408,12 @@
 
     window.addEventListener('beforeunload', handleBeforeUnload);
 
-    // Ensure mobile browser registers user activity to trigger beforeunload
     document.addEventListener('touchstart', () => {
       window.addEventListener('beforeunload', handleBeforeUnload);
     }, { once: true });
 
     // -------------------------------------------------------------
-    // GAME LOGIC
+    // GAME LOGIC & POINTER DRAG SYSTEM
     // -------------------------------------------------------------
     const booksData = [
       { id: 'b1', name: 'Genesis', testament: 'OT' },
@@ -422,6 +441,12 @@
     const finalScoreDisplay = document.getElementById('finalScore');
     const controlsArea = document.getElementById('controlsArea');
 
+    // Drag tracking state variables
+    let draggedPill = null;
+    let dragGhost = null;
+    let startX = 0, startY = 0;
+    let isDragging = false;
+
     function initGame() {
       bookPool.innerHTML = '';
       itemsOT.innerHTML = '';
@@ -436,15 +461,113 @@
         pill.id = book.id;
         pill.dataset.testament = book.testament;
 
-        pill.onclick = (e) => {
-          e.stopPropagation();
-          handlePillClick(pill);
-        };
+        // Pointer event listeners for Unified Touch & Mouse Dragging
+        pill.addEventListener('pointerdown', handlePointerDown);
 
         bookPool.appendChild(pill);
       });
 
       startTime = Date.now();
+    }
+
+    // --- DRAG AND DROP HANDLERS ---
+    function handlePointerDown(e) {
+      if (e.button !== undefined && e.button !== 0) return; // Only primary clicks/touches
+      draggedPill = e.currentTarget;
+      startX = e.clientX;
+      startY = e.clientY;
+      isDragging = false;
+
+      document.addEventListener('pointermove', handlePointerMove);
+      document.addEventListener('pointerup', handlePointerUp);
+      document.addEventListener('pointercancel', handlePointerUp);
+    }
+
+    function handlePointerMove(e) {
+      if (!draggedPill) return;
+
+      const dist = Math.hypot(e.clientX - startX, e.clientY - startY);
+      
+      // Threshold before triggering drag state
+      if (!isDragging && dist > 8) {
+        isDragging = true;
+        draggedPill.classList.add('dragging');
+        
+        // Create drag ghost clone
+        dragGhost = draggedPill.cloneNode(true);
+        dragGhost.classList.add('drag-ghost');
+        dragGhost.classList.remove('dragging');
+        document.body.appendChild(dragGhost);
+      }
+
+      if (isDragging && dragGhost) {
+        e.preventDefault();
+        dragGhost.style.left = `${e.clientX}px`;
+        dragGhost.style.top = `${e.clientY}px`;
+
+        // Highlight targeted container dynamically
+        const dropTarget = getDropTarget(e.clientX, e.clientY);
+        clearHighlights();
+        if (dropTarget) {
+          dropTarget.classList.add('drag-over');
+        }
+      }
+    }
+
+    function handlePointerUp(e) {
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
+      document.removeEventListener('pointercancel', handlePointerUp);
+
+      if (!draggedPill) return;
+
+      if (isDragging) {
+        const dropTarget = getDropTarget(e.clientX, e.clientY);
+
+        if (dropTarget) {
+          if (dropTarget.id === 'basket-OT') {
+            itemsOT.appendChild(draggedPill);
+            selectBasket('OT');
+          } else if (dropTarget.id === 'basket-NT') {
+            itemsNT.appendChild(draggedPill);
+            selectBasket('NT');
+          } else if (dropTarget.id === 'bookPool') {
+            bookPool.appendChild(draggedPill);
+          }
+          messageDiv.innerText = '';
+        }
+
+        // Cleanup drag states & ghost
+        draggedPill.classList.remove('dragging');
+        if (dragGhost) {
+          dragGhost.remove();
+          dragGhost = null;
+        }
+        clearHighlights();
+      } else {
+        // Simple tap fallback handler
+        handlePillClick(draggedPill);
+      }
+
+      draggedPill = null;
+      isDragging = false;
+    }
+
+    function getDropTarget(x, y) {
+      const targets = [basketOT, basketNT, bookPool];
+      for (let target of targets) {
+        const rect = target.getBoundingClientRect();
+        if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+          return target;
+        }
+      }
+      return null;
+    }
+
+    function clearHighlights() {
+      basketOT.classList.remove('drag-over');
+      basketNT.classList.remove('drag-over');
+      bookPool.classList.remove('drag-over');
     }
 
     function selectBasket(type) {
