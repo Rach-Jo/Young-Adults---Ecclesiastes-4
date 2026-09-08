@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Puzzle 2: Books of the Bible Balance</title>
+  <title>Puzzle 2: Testament Sorting</title>
   <style>
     :root {
-      --nature-bg: linear-gradient(135deg, #064e3b 0%, #022c22 50%, #0f172a 100%);
-      --card-bg: rgba(6, 78, 59, 0.65);
+      --bg-gradient: linear-gradient(135deg, #1e1b4b 0%, #311b92 50%, #0f172a 100%);
+      --card-bg: rgba(30, 27, 75, 0.75);
       --gold: #fbbf24;
-      --ot-color: #f59e0b;
-      --nt-color: #10b981;
+      --accent: #818cf8;
       --danger: #ef4444;
       --text: #f8fafc;
     }
@@ -24,8 +23,13 @@
       touch-action: manipulation;
     }
 
+    /* Prevent mobile pull-to-refresh */
+    html, body {
+      overscroll-behavior-y: contain;
+    }
+
     body {
-      background: var(--nature-bg);
+      background: var(--bg-gradient);
       color: var(--text);
       display: flex;
       justify-content: center;
@@ -39,12 +43,12 @@
     .container {
       background: var(--card-bg);
       backdrop-filter: blur(12px);
-      border: 2px solid rgba(52, 211, 153, 0.3);
+      border: 2px solid rgba(129, 140, 248, 0.3);
       border-radius: 20px;
-      padding: 20px 15px;
-      max-width: 1000px;
+      padding: 24px 16px;
+      max-width: 800px;
       width: 100%;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
       text-align: center;
       position: relative;
     }
@@ -53,149 +57,18 @@
       color: var(--gold);
       font-size: clamp(1.4rem, 4.5vw, 2.2rem);
       text-shadow: 0 2px 10px rgba(251, 191, 36, 0.4);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .instructions {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       font-size: clamp(0.85rem, 3.2vw, 1rem);
-      line-height: 1.35;
-      color: #a7f3d0;
+      line-height: 1.4;
+      color: #c7d2fe;
     }
 
-    /* Side-by-Side Main Layout (Desktop) / Vertical Stack (Mobile) */
-    .game-layout {
-      display: flex;
-      gap: 16px;
-      align-items: stretch;
-      justify-content: center;
-      flex-direction: row;
-    }
-
-    /* LEFT SIDE: Scale Stage */
-    .scale-stage {
-      flex: 1.4;
-      position: relative;
-      height: 380px;
-      background: radial-gradient(circle, rgba(15, 23, 42, 0.8) 0%, rgba(2, 44, 34, 0.9) 100%);
-      border: 2px solid #059669;
-      border-radius: 18px;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
-    }
-
-    .scale-center-wrapper {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .fulcrum {
-      width: 0;
-      height: 0;
-      border-left: 24px solid transparent;
-      border-right: 24px solid transparent;
-      border-bottom: 45px solid #854d0e;
-      position: absolute;
-      top: 52%;
-      z-index: 2;
-      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6));
-    }
-
-    .beam-assembly {
-      position: absolute;
-      top: calc(52% - 12px);
-      width: clamp(280px, 80%, 360px);
-      height: 12px;
-      background: linear-gradient(90deg, #b45309, #fef3c7, #b45309);
-      border-radius: 8px;
-      transform-origin: center center;
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      z-index: 3;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-    }
-
-    .pan-container {
-      position: absolute;
-      top: 6px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .pan-container.left { left: -10px; }
-    .pan-container.right { right: -10px; }
-
-    .pan-badge {
-      font-size: clamp(0.65rem, 2.5vw, 0.75rem);
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-      white-space: nowrap;
-    }
-
-    .left .pan-badge { background: var(--ot-color); color: #000; }
-    .right .pan-badge { background: var(--nt-color); color: #000; }
-
-    .hanger {
-      width: 2px;
-      height: 28px;
-      background: #d97706;
-    }
-
-    .pan {
-      width: clamp(120px, 28vw, 150px);
-      min-height: 140px;
-      border: 2px solid #34d399;
-      border-top: none;
-      border-radius: 0 0 20px 20px;
-      background: rgba(6, 78, 59, 0.85);
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      justify-content: flex-start;
-      align-items: center;
-      padding: 6px;
-      transition: background 0.2s, border-color 0.2s;
-      box-shadow: inset 0 0 12px rgba(0,0,0,0.6);
-    }
-
-    .pan.highlight {
-      background: rgba(251, 191, 36, 0.25);
-      border-color: var(--gold);
-    }
-
-    /* RIGHT SIDE: Vertical / Horizontal Word Bank Panel */
-    .word-bank-panel {
-      flex: 0.8;
-      background: rgba(15, 23, 42, 0.7);
-      border: 2px dashed #059669;
-      border-radius: 18px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      height: 380px;
-      overflow-y: auto;
-      transition: border-color 0.2s;
-    }
-
-    .word-bank-panel.highlight {
-      border-color: var(--gold);
-      background: rgba(15, 23, 42, 0.85);
-    }
-
-    .bank-title {
+    /* Unsorted Pool */
+    .pool-title {
       font-size: 0.9rem;
       font-weight: 800;
       color: var(--gold);
@@ -204,64 +77,113 @@
       letter-spacing: 1px;
     }
 
-    .blocks-inventory {
-      width: 100%;
+    .book-pool {
       display: flex;
-      flex-direction: column;
-      gap: 6px;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.6);
+      border: 2px dashed rgba(129, 140, 248, 0.4);
+      border-radius: 16px;
+      padding: 14px;
+      min-height: 70px;
+      margin-bottom: 20px;
     }
 
-    /* Nature Word Chips */
-    .block {
-      width: 100%;
-      padding: 8px 10px;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: clamp(0.8rem, 3vw, 0.9rem);
-      cursor: grab;
-      user-select: none;
-      color: #ffffff;
-      text-align: center;
-      box-shadow: 0 3px 0 rgba(0,0,0,0.3);
-      transition: transform 0.1s;
+    /* Baskets Layout */
+    .baskets-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
     }
 
-    .block:active { cursor: grabbing; transform: scale(0.96); }
-
-    /* Compact Variant Inside Scale Pans */
-    .pan .block {
-      padding: 4px 6px;
-      font-size: clamp(0.7rem, 2.5vw, 0.78rem);
-      box-shadow: none;
-      background: #022c22 !important;
-      border: 1px solid #34d399;
-    }
-
-    /* Controls & Messaging */
-    .controls-area {
-      margin-top: 16px;
+    .basket {
+      background: rgba(15, 23, 42, 0.8);
+      border: 2px solid rgba(129, 140, 248, 0.4);
+      border-radius: 16px;
+      padding: 12px;
+      min-height: 160px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      cursor: pointer;
+      transition: all 0.25s ease;
       position: relative;
     }
 
-    button.submit-btn {
-      padding: 12px 32px;
-      font-size: clamp(1rem, 3.8vw, 1.1rem);
+    .basket-title {
+      font-size: clamp(0.95rem, 3.5vw, 1.1rem);
+      font-weight: bold;
+      color: var(--gold);
+      margin-bottom: 10px;
+      pointer-events: none;
+    }
+
+    .basket.active {
+      border-color: var(--gold);
+      box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+      background: rgba(49, 27, 146, 0.8);
+    }
+
+    .basket-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      width: 100%;
+      min-height: 100px;
+    }
+
+    /* Book Pills */
+    .book-pill {
+      background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+      color: white;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: clamp(0.85rem, 3vw, 0.95rem);
+      font-weight: 700;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.15s, background-color 0.15s;
+    }
+
+    .book-pill:active { transform: scale(0.95); }
+
+    /* Controls & Buttons */
+    .controls-area {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    button {
+      padding: 10px 24px;
+      font-size: clamp(0.95rem, 3.5vw, 1.1rem);
       font-weight: bold;
       border: none;
       border-radius: 12px;
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
       color: white;
       cursor: pointer;
-      box-shadow: 0 4px 0 #047857;
-      transition: transform 0.1s;
+      transition: transform 0.1s, filter 0.2s;
     }
 
-    button.submit-btn:hover { filter: brightness(1.1); }
-    button.submit-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #047857; }
+    .submit-btn {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      box-shadow: 0 4px 0 #047857;
+    }
+
+    .reset-btn {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      box-shadow: 0 4px 0 #78350f;
+    }
+
+    button:hover { filter: brightness(1.1); }
+    button:active { transform: translateY(2px); }
 
     .message {
       font-weight: 800;
@@ -272,30 +194,25 @@
     .success { color: #34d399; text-shadow: 0 0 10px rgba(52, 211, 153, 0.5); }
     .error { color: #f87171; }
 
-    /* Floating Penalty Text Animation */
+    /* Floating Penalty Animation */
     .floating-penalty {
       position: absolute;
       color: #ef4444;
       font-weight: 900;
       font-size: clamp(1.2rem, 4vw, 1.5rem);
       pointer-events: none;
-      animation: floatUp 1.2s forwards ease-out;
+      animation: floatUpSlow 2.5s forwards ease-out;
       text-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
       z-index: 50;
     }
 
-    @keyframes floatUp {
-      0% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-      100% {
-        opacity: 0;
-        transform: translateY(-40px) scale(1.15);
-      }
+    @keyframes floatUpSlow {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      70% { opacity: 1; transform: translateY(-35px) scale(1.1); }
+      100% { opacity: 0; transform: translateY(-55px) scale(1.15); }
     }
 
-    /* Completion Screen Layout */
+    /* Results Screen */
     .results-page {
       display: none;
       flex-direction: column;
@@ -314,8 +231,8 @@
     }
 
     .score-badge {
-      background: rgba(16, 185, 129, 0.2);
-      border: 2px solid #34d399;
+      background: rgba(129, 140, 248, 0.2);
+      border: 2px solid #818cf8;
       border-radius: 12px;
       padding: 10px 20px;
       font-size: clamp(1.1rem, 4vw, 1.5rem);
@@ -323,79 +240,97 @@
       color: #fff;
     }
 
-    /* Mobile Responsive Optimizations */
-    @media (max-width: 768px) {
-      .game-layout {
-        flex-direction: column;
-      }
-      .scale-stage {
-        height: 310px;
-      }
-      .word-bank-panel {
-        height: auto;
-        max-height: 220px;
-      }
-      .blocks-inventory {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 6px;
-      }
+    /* CUSTOM RELOAD WARNING MODAL OVERLAY */
+    .reload-warning-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .reload-warning-box {
+      background: rgba(30, 27, 75, 0.95);
+      border: 3px solid var(--danger);
+      border-radius: 20px;
+      padding: 24px;
+      max-width: 450px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 0 30px rgba(239, 68, 68, 0.5);
+    }
+
+    .reload-warning-box h2 {
+      color: var(--danger);
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+    }
+
+    .reload-warning-box p {
+      color: #f8fafc;
+      font-size: 1.1rem;
+      font-weight: 600;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .reload-warning-box button {
+      background: var(--danger);
+      padding: 10px 20px;
     }
   </style>
 </head>
 <body>
 
-  <!-- Game Page Container -->
+  <!-- Custom Warning Modal -->
+  <div class="reload-warning-modal" id="reloadModal">
+    <div class="reload-warning-box">
+      <h2>🚨 WARNING</h2>
+      <p>Please inform the instructor before reloading!</p>
+      <p style="font-size: 0.9rem; color: #c7d2fe;">You must scan the QR code again freshly to restart the puzzle.</p>
+      <button onclick="closeReloadModal()">Return to Puzzle</button>
+    </div>
+  </div>
+
+  <!-- Main Game Container -->
   <div class="container" id="mainContainer">
-    <h1>Puzzle 2: The Books of the BIBLE</h1>
+    <h1>Puzzle 2: Testament Sorting</h1>
 
     <p class="instructions">
-      Place <strong>5 Old Testament books</strong> in the Left Pan and <strong>5 New Testament books</strong> in the Right Pan.<br>
-      Tap or drag the chips to move them into position!
+      Tap a <strong>Testament Basket</strong> below to select it, then tap book titles to send them into that basket!
     </p>
 
-    <!-- Game Layout -->
-    <div class="game-layout">
-      
-      <!-- LEFT: Balance Scale Stage -->
-      <div class="scale-stage">
-        <div class="scale-center-wrapper">
-          <div class="beam-assembly" id="beam">
-            
-            <!-- Left Pan (OT Target) -->
-            <div class="pan-container left">
-              <div class="pan-badge">Old Testament (5)</div>
-              <div class="hanger"></div>
-              <div class="pan" id="leftPan" ondragover="allowDrop(event)" ondragleave="clearHighlight(event)" ondrop="dropBlock(event, 'left')"></div>
-            </div>
+    <!-- Unsorted Books Pool -->
+    <div class="pool-title">📖 Unsorted Books</div>
+    <div class="book-pool" id="bookPool"></div>
 
-            <!-- Right Pan (NT Target) -->
-            <div class="pan-container right">
-              <div class="pan-badge">New Testament (5)</div>
-              <div class="hanger"></div>
-              <div class="pan" id="rightPan" ondragover="allowDrop(event)" ondragleave="clearHighlight(event)" ondrop="dropBlock(event, 'right')"></div>
-            </div>
-
-          </div>
-          <div class="fulcrum"></div>
-        </div>
+    <!-- Baskets -->
+    <div class="baskets-container">
+      <div class="basket active" id="basket-OT" onclick="selectBasket('OT')">
+        <div class="basket-title">📜 Old Testament</div>
+        <div class="basket-items" id="items-OT"></div>
       </div>
 
-      <!-- RIGHT: Word List Inventory -->
-      <div class="word-bank-panel" id="wordBankPanel" ondragover="allowDrop(event)" ondragleave="clearHighlight(event)" ondrop="returnToInventory(event)">
-        <div class="bank-title">🌿 Word Bank</div>
-        <div class="blocks-inventory" id="inventory">
-          <!-- Rendered dynamically -->
-        </div>
+      <div class="basket" id="basket-NT" onclick="selectBasket('NT')">
+        <div class="basket-title">✝️ New Testament</div>
+        <div class="basket-items" id="items-NT"></div>
       </div>
-
     </div>
 
-    <!-- Controls & Message Display -->
+    <!-- Controls -->
     <div class="controls-area" id="controlsArea">
-      <button class="submit-btn" id="checkBtn" onclick="checkAnswer()">Check Balance</button>
-      <div class="message" id="message"></div>
+      <button class="submit-btn" onclick="checkSorting()">Submit Sorting</button>
+      <button class="reset-btn" onclick="resetSorting()">Reset</button>
     </div>
+
+    <div class="message" id="message"></div>
   </div>
 
   <!-- Results Page Container -->
@@ -407,135 +342,117 @@
   </div>
 
   <script>
-    const words = [
-      { id: 'w1', name: 'Matthew', type: 'NT' },
-      { id: 'w2', name: 'Romans', type: 'NT' },
-      { id: 'w3', name: 'Hebrews', type: 'NT' },
-      { id: 'w4', name: 'Revelation', type: 'NT' },
-      { id: 'w5', name: 'Jude', type: 'NT' },
-      { id: 'w6', name: 'Leviticus', type: 'OT' },
-      { id: 'w7', name: 'Daniel', type: 'OT' },
-      { id: 'w8', name: 'Hosea', type: 'OT' },
-      { id: 'w9', name: 'Amos', type: 'OT' },
-      { id: 'w10', name: 'Psalms', type: 'OT' },
-      { id: 'w11', name: 'Nathaniel', type: 'NONE' },
-      { id: 'w12', name: 'Songs of Praise', type: 'NONE' },
-      { id: 'w13', name: 'Rahab', type: 'NONE' },
-      { id: 'w14', name: 'Elijah', type: 'NONE' }
+    // -------------------------------------------------------------
+    // INTERCEPT RELOAD & SHOW INSTRUCTOR WARNING MESSAGE
+    // -------------------------------------------------------------
+    const reloadModal = document.getElementById('reloadModal');
+
+    function showReloadModal() {
+      reloadModal.style.display = 'flex';
+    }
+
+    function closeReloadModal() {
+      reloadModal.style.display = 'none';
+    }
+
+    // 1. Intercept Keyboard Shortcuts (F5, Ctrl+R, Cmd+R, etc.)
+    window.addEventListener('keydown', (e) => {
+      if (
+        e.key === 'F5' || 
+        (e.ctrlKey && e.key.toLowerCase() === 'r') || 
+        (e.metaKey && e.key.toLowerCase() === 'r')
+      ) {
+        e.preventDefault();
+        showReloadModal();
+      }
+    });
+
+    // 2. Standard Browser Unload Fallback Prompt
+    window.addEventListener('beforeunload', (e) => {
+      e.preventDefault();
+      e.returnValue = 'Please inform the instructor before reloading!';
+      return 'Please inform the instructor before reloading!';
+    });
+
+    // -------------------------------------------------------------
+    // GAME LOGIC
+    // -------------------------------------------------------------
+    const booksData = [
+      { id: 'b1', name: 'Genesis', testament: 'OT' },
+      { id: 'b2', name: 'Exodus', testament: 'OT' },
+      { id: 'b3', name: 'Psalms', testament: 'OT' },
+      { id: 'b4', name: 'Isaiah', testament: 'OT' },
+      { id: 'b5', name: 'Matthew', testament: 'NT' },
+      { id: 'b6', name: 'Romans', testament: 'NT' },
+      { id: 'b7', name: 'Revelation', testament: 'NT' },
+      { id: 'b8', name: 'Hebrews', testament: 'NT' }
     ];
 
-    const inventory = document.getElementById('inventory');
-    const leftPan = document.getElementById('leftPan');
-    const rightPan = document.getElementById('rightPan');
-    const wordBankPanel = document.getElementById('wordBankPanel');
-    const beam = document.getElementById('beam');
+    let selectedTestament = 'OT';
+    let startTime = Date.now();
+    let wrongAttempts = 0;
+
+    const bookPool = document.getElementById('bookPool');
+    const itemsOT = document.getElementById('items-OT');
+    const itemsNT = document.getElementById('items-NT');
+    const basketOT = document.getElementById('basket-OT');
+    const basketNT = document.getElementById('basket-NT');
     const messageDiv = document.getElementById('message');
     const mainContainer = document.getElementById('mainContainer');
     const resultsContainer = document.getElementById('resultsContainer');
     const finalScoreDisplay = document.getElementById('finalScore');
     const controlsArea = document.getElementById('controlsArea');
 
-    let startTime = Date.now();
-    let wrongAttempts = 0;
-    let selectedBlock = null;
+    function initGame() {
+      bookPool.innerHTML = '';
+      itemsOT.innerHTML = '';
+      itemsNT.innerHTML = '';
 
-    // Vibrant Nature Color Palette for Chips
-    const colors = ['#ec4899', '#d97706', '#10b981', '#0284c7', '#8b5cf6', '#ef4444'];
+      const shuffled = [...booksData].sort(() => Math.random() - 0.5);
 
-    function initBlocks() {
-      const shuffled = [...words].sort(() => Math.random() - 0.5);
-      shuffled.forEach((item, index) => {
-        const block = document.createElement('div');
-        block.className = 'block';
-        block.draggable = true;
-        block.id = item.id;
-        block.innerText = item.name;
-        block.dataset.type = item.type;
-        block.style.background = colors[index % colors.length];
+      shuffled.forEach(book => {
+        const pill = document.createElement('div');
+        pill.className = 'book-pill';
+        pill.innerText = book.name;
+        pill.id = book.id;
+        pill.dataset.testament = book.testament;
 
-        // Standard Drag and Drop
-        block.ondragstart = drag;
+        pill.onclick = (e) => {
+          e.stopPropagation();
+          handlePillClick(pill);
+        };
 
-        // Mobile Touch & Tap Movement
-        block.addEventListener('click', () => handleBlockTap(block));
-
-        inventory.appendChild(block);
+        bookPool.appendChild(pill);
       });
 
       startTime = Date.now();
     }
 
-    initBlocks();
-
-    // Tap-to-move feature for mobile responsiveness
-    function handleBlockTap(block) {
-      if (block.parentElement === leftPan || block.parentElement === rightPan) {
-        inventory.appendChild(block);
+    function selectBasket(type) {
+      selectedTestament = type;
+      if (type === 'OT') {
+        basketOT.classList.add('active');
+        basketNT.classList.remove('active');
       } else {
-        if (leftPan.children.length < 5) {
-          leftPan.appendChild(block);
-        } else if (rightPan.children.length < 5) {
-          rightPan.appendChild(block);
-        } else {
-          inventory.appendChild(block);
-        }
-      }
-      updateScaleTilt();
-    }
-
-    function drag(ev) {
-      ev.dataTransfer.setData("text", ev.target.id);
-    }
-
-    function allowDrop(ev) {
-      ev.preventDefault();
-      if (ev.currentTarget.classList.contains('pan') || ev.currentTarget.classList.contains('word-bank-panel')) {
-        ev.currentTarget.classList.add('highlight');
+        basketNT.classList.add('active');
+        basketOT.classList.remove('active');
       }
     }
 
-    function clearHighlight(ev) {
-      ev.currentTarget.classList.remove('highlight');
-    }
-
-    function dropBlock(ev, panSide) {
-      ev.preventDefault();
-      leftPan.classList.remove('highlight');
-      rightPan.classList.remove('highlight');
-
-      const blockId = ev.dataTransfer.getData("text");
-      const blockEl = document.getElementById(blockId);
-      const targetPan = panSide === 'left' ? leftPan : rightPan;
-
-      if (blockEl && !targetPan.contains(blockEl)) {
-        targetPan.appendChild(blockEl);
-        updateScaleTilt();
-      }
-    }
-
-    function returnToInventory(ev) {
-      ev.preventDefault();
-      wordBankPanel.classList.remove('highlight');
-      const blockId = ev.dataTransfer.getData("text");
-      const blockEl = document.getElementById(blockId);
-
-      if (blockEl && !inventory.contains(blockEl)) {
-        inventory.appendChild(blockEl);
-        updateScaleTilt();
-      }
-    }
-
-    function updateScaleTilt() {
-      const leftCount = leftPan.children.length;
-      const rightCount = rightPan.children.length;
-
-      if (leftCount === rightCount) {
-        beam.style.transform = 'rotate(0deg)';
-      } else if (leftCount > rightCount) {
-        beam.style.transform = `rotate(${-Math.min(12, (leftCount - rightCount) * 3.5)}deg)`;
+    function handlePillClick(pill) {
+      if (pill.parentElement.classList.contains('basket-items')) {
+        bookPool.appendChild(pill);
       } else {
-        beam.style.transform = `rotate(${Math.min(12, (rightCount - leftCount) * 3.5)}deg)`;
+        const targetContainer = selectedTestament === 'OT' ? itemsOT : itemsNT;
+        targetContainer.appendChild(pill);
       }
+      messageDiv.innerText = '';
+    }
+
+    function resetSorting() {
+      const allPills = document.querySelectorAll('.book-pill');
+      allPills.forEach(pill => bookPool.appendChild(pill));
+      messageDiv.innerText = '';
     }
 
     function triggerPenaltyAnimation() {
@@ -546,52 +463,49 @@
       const rect = controlsArea.getBoundingClientRect();
       const containerRect = mainContainer.getBoundingClientRect();
 
-      penaltyEl.style.left = `${rect.left - containerRect.left + rect.width / 2 - 40}px`;
+      penaltyEl.style.left = `${rect.left - containerRect.left + rect.width / 2 - 45}px`;
       penaltyEl.style.top = `${rect.top - containerRect.top - 15}px`;
 
       mainContainer.appendChild(penaltyEl);
 
       setTimeout(() => {
         penaltyEl.remove();
-      }, 1200);
+      }, 2500);
     }
 
-    function checkAnswer() {
-      const leftBlocks = Array.from(leftPan.children);
-      const rightBlocks = Array.from(rightPan.children);
+    function checkSorting() {
+      if (bookPool.children.length > 0) {
+        messageDiv.className = 'message error';
+        messageDiv.innerText = '⚠️ Please sort all books into a basket first!';
+        return;
+      }
 
-      const leftCorrect = leftBlocks.length === 5 && leftBlocks.every(b => b.dataset.type === 'OT');
-      const rightCorrect = rightBlocks.length === 5 && rightBlocks.every(b => b.dataset.type === 'NT');
+      let isCorrect = true;
 
-      if (leftCorrect && rightCorrect) {
+      Array.from(itemsOT.children).forEach(pill => {
+        if (pill.dataset.testament !== 'OT') isCorrect = false;
+      });
+
+      Array.from(itemsNT.children).forEach(pill => {
+        if (pill.dataset.testament !== 'NT') isCorrect = false;
+      });
+
+      if (isCorrect) {
         const endTime = Date.now();
         const totalTimeSeconds = Math.floor((endTime - startTime) / 1000);
 
-        // Tiered time-based scoring system
         let baseScore = 10;
-        if (totalTimeSeconds <= 10) {
-          baseScore = 100;
-        } else if (totalTimeSeconds <= 20) {
-          baseScore = 90;
-        } else if (totalTimeSeconds <= 30) {
-          baseScore = 80;
-        } else if (totalTimeSeconds <= 40) {
-          baseScore = 70;
-        } else if (totalTimeSeconds <= 50) {
-          baseScore = 60;
-        } else if (totalTimeSeconds <= 60) {
-          baseScore = 50;
-        } else if (totalTimeSeconds <= 70) {
-          baseScore = 40;
-        } else if (totalTimeSeconds <= 80) {
-          baseScore = 30;
-        } else if (totalTimeSeconds <= 90) {
-          baseScore = 20;
-        } else {
-          baseScore = 10;
-        }
+        if (totalTimeSeconds <= 10) baseScore = 100;
+        else if (totalTimeSeconds <= 20) baseScore = 90;
+        else if (totalTimeSeconds <= 30) baseScore = 80;
+        else if (totalTimeSeconds <= 40) baseScore = 70;
+        else if (totalTimeSeconds <= 50) baseScore = 60;
+        else if (totalTimeSeconds <= 60) baseScore = 50;
+        else if (totalTimeSeconds <= 70) baseScore = 40;
+        else if (totalTimeSeconds <= 80) baseScore = 30;
+        else if (totalTimeSeconds <= 90) baseScore = 20;
+        else baseScore = 10;
 
-        // Penalty for wrong attempts with a minimum score floor of 10 points
         const finalScore = Math.max(10, baseScore - (wrongAttempts * 20));
 
         messageDiv.className = 'message success';
@@ -606,10 +520,12 @@
       } else {
         wrongAttempts++;
         messageDiv.className = 'message error';
-        messageDiv.innerText = '❌ Unbalanced or incorrect choices! Try again.';
+        messageDiv.innerText = '❌ Some books are in the wrong basket! Try again.';
         triggerPenaltyAnimation();
       }
     }
+
+    initGame();
   </script>
 </body>
 </html>
