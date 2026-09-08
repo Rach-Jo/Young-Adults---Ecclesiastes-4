@@ -320,7 +320,7 @@
 
     <!-- Controls -->
     <div class="controls-area" id="controlsArea">
-      <button class="submit-btn" onclick="checkSorting()">Submit Sorting</button>
+      <button class="submit-btn" onclick="checkSorting()">Submit</button>
       <button class="reset-btn" onclick="resetSorting()">Reset</button>
     </div>
 
@@ -528,7 +528,7 @@
         const finalScore = Math.max(10, baseScore - (wrongAttempts * 20));
 
         messageDiv.className = 'message success';
-        messageDiv.innerHTML = '🎉 Good job! You found the second letter: O';
+        messageDiv.innerHTML = '🎉 Good job! Puzzle completed!!!';
 
         setTimeout(() => {
           mainContainer.style.display = 'none';
