@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Puzzle 3: Key Word </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Puzzle 3: Key Word</title>
   <style>
     :root {
       --nature-bg: linear-gradient(135deg, #064e3b 0%, #022c22 50%, #0f172a 100%);
@@ -18,7 +18,9 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
 
     body {
@@ -28,56 +30,35 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      padding: 20px;
+      padding: 12px;
       position: relative;
-    }
-
-    /* Penalty Timer Banner */
-    .timer-banner {
-      position: absolute;
-      top: 15px;
-      right: 20px;
-      background: rgba(127, 29, 29, 0.9);
-      border: 3px solid var(--danger);
-      border-radius: 12px;
-      padding: 10px 20px;
-      font-weight: 800;
-      color: #fca5a5;
-      font-size: 1.2rem;
-      display: none;
-      box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
-      z-index: 100;
-      animation: pulse 1s infinite alternate;
-    }
-
-    @keyframes pulse {
-      from { transform: scale(1); }
-      to { transform: scale(1.05); }
+      overflow-x: hidden;
     }
 
     .container {
       background: var(--card-bg);
       backdrop-filter: blur(12px);
       border: 2px solid rgba(52, 211, 153, 0.3);
-      border-radius: 24px;
-      padding: 35px 30px;
+      border-radius: 20px;
+      padding: 24px 16px;
       max-width: 750px;
       width: 100%;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
       text-align: center;
+      position: relative;
     }
 
     h1 {
       color: var(--gold);
-      font-size: 2.2rem;
+      font-size: clamp(1.4rem, 4.5vw, 2.2rem);
       text-shadow: 0 2px 10px rgba(251, 191, 36, 0.4);
       margin-bottom: 8px;
     }
 
     .instructions {
-      margin-bottom: 25px;
-      font-size: 1.05rem;
-      line-height: 1.5;
+      margin-bottom: 20px;
+      font-size: clamp(0.85rem, 3.2vw, 1.05rem);
+      line-height: 1.4;
       color: #a7f3d0;
     }
 
@@ -85,15 +66,16 @@
     .slots-container {
       display: flex;
       justify-content: center;
-      gap: 10px;
-      margin-bottom: 30px;
+      gap: 6px;
+      margin-bottom: 24px;
+      flex-wrap: nowrap;
     }
 
     .slot {
-      width: 60px;
-      height: 70px;
-      border: 3px dashed #34d399;
-      border-radius: 12px;
+      width: clamp(40px, 11vw, 60px);
+      height: clamp(50px, 13vw, 70px);
+      border: 2px dashed #34d399;
+      border-radius: 10px;
       background: rgba(15, 23, 42, 0.6);
       display: flex;
       justify-content: center;
@@ -106,36 +88,42 @@
       border-color: var(--gold);
     }
 
+    .slot.fixed-slot {
+      border: 2px solid var(--gold);
+      background: rgba(251, 191, 36, 0.15);
+    }
+
     /* Scrambled Tile Bank Area */
     .bank-title {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 800;
       color: var(--gold);
       text-transform: uppercase;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       letter-spacing: 1px;
     }
 
     .tiles-bank {
       display: flex;
       justify-content: center;
-      gap: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
       background: rgba(15, 23, 42, 0.7);
       border: 2px dashed #059669;
-      border-radius: 18px;
-      padding: 20px;
-      min-height: 90px;
-      margin-bottom: 25px;
+      border-radius: 16px;
+      padding: 16px;
+      min-height: 80px;
+      margin-bottom: 20px;
     }
 
     /* Letter Tile Styling */
     .tile {
-      width: 55px;
-      height: 65px;
+      width: clamp(38px, 10.5vw, 55px);
+      height: clamp(48px, 12.5vw, 65px);
       background: linear-gradient(135deg, #10b981 0%, #047857 100%);
       border: 2px solid #a7f3d0;
-      border-radius: 10px;
-      font-size: 1.8rem;
+      border-radius: 8px;
+      font-size: clamp(1.2rem, 4vw, 1.8rem);
       font-weight: 800;
       color: #ffffff;
       display: flex;
@@ -143,12 +131,8 @@
       align-items: center;
       cursor: grab;
       user-select: none;
-      box-shadow: 0 5px 0 #022c22, 0 6px 12px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 4px 0 #022c22, 0 4px 8px rgba(0, 0, 0, 0.4);
       transition: transform 0.1s, box-shadow 0.1s;
-    }
-
-    .tile:hover {
-      transform: translateY(-3px);
     }
 
     .tile:active {
@@ -157,22 +141,33 @@
       box-shadow: 0 2px 0 #022c22;
     }
 
-    .disabled-input {
-      pointer-events: none;
-      filter: grayscale(0.8);
+    /* Pre-filled Fixed Hint Tile */
+    .tile.fixed-tile {
+      background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
+      border-color: #fef3c7;
+      box-shadow: 0 4px 0 #78350f;
+      cursor: default;
+    }
+
+    /* Compact Tile Styling when inside Target Slots */
+    .slot .tile {
+      width: 100%;
+      height: 100%;
+      box-shadow: none;
     }
 
     /* Action Buttons */
     .controls-area {
       display: flex;
       justify-content: center;
-      gap: 15px;
-      margin-bottom: 20px;
+      gap: 12px;
+      margin-bottom: 12px;
+      position: relative;
     }
 
     button {
-      padding: 12px 28px;
-      font-size: 1.1rem;
+      padding: 10px 24px;
+      font-size: clamp(0.95rem, 3.5vw, 1.1rem);
       font-weight: bold;
       border: none;
       border-radius: 12px;
@@ -196,49 +191,95 @@
 
     .message {
       font-weight: 800;
-      font-size: 1.3rem;
-      min-height: 35px;
+      font-size: clamp(0.95rem, 3.5vw, 1.2rem);
+      min-height: 28px;
     }
 
     .success { color: #34d399; text-shadow: 0 0 10px rgba(52, 211, 153, 0.5); }
     .error { color: #f87171; }
+
+    /* Floating Penalty Animation */
+    .floating-penalty {
+      position: absolute;
+      color: #ef4444;
+      font-weight: 900;
+      font-size: clamp(1.2rem, 4vw, 1.5rem);
+      pointer-events: none;
+      animation: floatUp 1.2s forwards ease-out;
+      text-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+      z-index: 50;
+    }
+
+    @keyframes floatUp {
+      0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-40px) scale(1.15);
+      }
+    }
+
+    /* Completion Screen Layout */
+    .results-page {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 10px;
+    }
+
+    .letter-display {
+      font-size: clamp(3rem, 10vw, 4.5rem);
+      font-weight: 900;
+      color: var(--gold);
+      text-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+      margin: 6px 0;
+    }
+
+    .score-badge {
+      background: rgba(16, 185, 129, 0.2);
+      border: 2px solid #34d399;
+      border-radius: 12px;
+      padding: 10px 20px;
+      font-size: clamp(1.1rem, 4vw, 1.5rem);
+      font-weight: 800;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Penalty Clock -->
-  <div class="timer-banner" id="timerBanner">
-    🚨 Penalty Lockout: <span id="timerVal">10</span>s
-  </div>
-
+  <!-- Main Game Container -->
   <div class="container" id="mainContainer">
     <h1>Puzzle 3: Key Word</h1>
 
     <p class="instructions">
-      Unscramble the letters below.<br>
-      <em>Drag tiles into the slots or click them to place them in order!</em> <br>
-      <em>wrong order triggers a 10-second penalty!</em>
+      Unscramble the word! <strong>'S'</strong>, <strong>'A'</strong>, and <strong>'S'</strong> are given as hints.<br>
+      Tap or drag the remaining tiles into place!
     </p>
 
-    <!-- Target Slots -->
+    <!-- Target Word Slots -->
     <div class="slots-container" id="slotsContainer">
-      <div class="slot" ondragover="allowDrop(event)" ondragleave="clearHighlight(event)" ondrop="dropTile(event, 0)" onclick="returnSlotTile(0)"></div>
-      <div class="slot" ondragover="allowDrop(event)" ondragleave="clearHighlight(event)" ondrop="dropTile(event, 1)" onclick="returnSlotTile(1)"></div>
-      <div class="slot" ondragover="allowDrop(event)" ondragleave="clearHighlight(event)" ondrop="dropTile(event, 2)" onclick="returnSlotTile(2)"></div>
-      <div class="slot" ondragover="allowDrop(event)" ondragleave="clearHighlight(event)" ondrop="dropTile(event, 3)" onclick="returnSlotTile(3)"></div>
-      <div class="slot" ondragover="allowDrop(event)" ondragleave="clearHighlight(event)" ondrop="dropTile(event, 4)" onclick="returnSlotTile(4)"></div>
-      <div class="slot" ondragover="allowDrop(event)" ondragleave="clearHighlight(event)" ondrop="dropTile(event, 5)" onclick="returnSlotTile(5)"></div>
-      <div class="slot" ondragover="allowDrop(event)" ondragleave="clearHighlight(event)" ondrop="dropTile(event, 6)" onclick="returnSlotTile(6)"></div>
+      <div class="slot fixed-slot" id="slot-0"></div>
+      <div class="slot" id="slot-1" ondragover="allowDrop(event)" ondragleave="clearHighlight(event)" ondrop="dropTile(event, 1)" onclick="returnSlotTile(1)"></div>
+      <div class="slot" id="slot-2" ondragover="allowDrop(event)" ondragleave="clearHighlight(event)" ondrop="dropTile(event, 2)" onclick="returnSlotTile(2)"></div>
+      <div class="slot fixed-slot" id="slot-3"></div>
+      <div class="slot" id="slot-4" ondragover="allowDrop(event)" ondragleave="clearHighlight(event)" ondrop="dropTile(event, 4)" onclick="returnSlotTile(4)"></div>
+      <div class="slot" id="slot-5" ondragover="allowDrop(event)" ondragleave="clearHighlight(event)" ondrop="dropTile(event, 5)" onclick="returnSlotTile(5)"></div>
+      <div class="slot fixed-slot" id="slot-6"></div>
     </div>
 
-    <!-- Letter Tile Bank -->
+    <!-- Letter Bank -->
     <div class="bank-title">🌿 Letter Bank</div>
     <div class="tiles-bank" id="tilesBank" ondragover="allowDrop(event)" ondrop="returnToBank(event)">
-      <!-- Generated via JavaScript -->
+      <!-- Rendered dynamically -->
     </div>
 
-    <!-- Controls & Feedback -->
-    <div class="controls-area">
+    <!-- Controls -->
+    <div class="controls-area" id="controlsArea">
       <button class="submit-btn" id="checkBtn" onclick="checkAnswer()">Submit Word</button>
       <button class="reset-btn" id="resetBtn" onclick="resetTiles()">Reset</button>
     </div>
@@ -246,48 +287,74 @@
     <div class="message" id="message"></div>
   </div>
 
+  <!-- Results Page Container -->
+  <div class="container results-page" id="resultsContainer">
+    <h1>Puzzle Completed!</h1>
+    <p class="instructions">The third letter unlocked is:</p>
+    <div class="letter-display">"R"</div>
+    <div class="score-badge">Your Points: <span id="finalScore">0</span></div>
+  </div>
+
   <script>
-    // Target solution word letters in scrambled order
-    const letters = ['R', 'N', 'S', 'D', 'T', 'A', 'S'];
     const targetWord = "STRANDS";
+    // Mobile/Player letters to place: T, R, N, D
+    const movableLetters = ['T', 'R', 'N', 'D'];
 
     const tilesBank = document.getElementById('tilesBank');
     const slots = document.querySelectorAll('.slot');
     const messageDiv = document.getElementById('message');
-    const timerBanner = document.getElementById('timerBanner');
-    const timerVal = document.getElementById('timerVal');
     const mainContainer = document.getElementById('mainContainer');
-    const checkBtn = document.getElementById('checkBtn');
-    const resetBtn = document.getElementById('resetBtn');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const finalScoreDisplay = document.getElementById('finalScore');
+    const controlsArea = document.getElementById('controlsArea');
 
-    let penaltyActive = false;
+    let startTime = Date.now();
+    let wrongAttempts = 0;
 
-    // Initialize letter tiles into the bank
-    function initTiles() {
-      tilesBank.innerHTML = '';
-      letters.forEach((char, index) => {
+    function initGame() {
+      // Place pre-filled locked hint letters in slots 0 ('S'), 3 ('A'), 6 ('S')
+      createFixedTile('S', document.getElementById('slot-0'));
+      createFixedTile('A', document.getElementById('slot-3'));
+      createFixedTile('S', document.getElementById('slot-6'));
+
+      // Shuffle and place remaining moveable tiles into bank
+      const shuffled = [...movableLetters].sort(() => Math.random() - 0.5);
+      shuffled.forEach((char, index) => {
         const tile = document.createElement('div');
         tile.className = 'tile';
         tile.draggable = true;
         tile.id = `tile-${index}`;
         tile.innerText = char;
+
+        // Drag events
         tile.ondragstart = drag;
-        tile.onclick = function() { autoPlaceTile(tile); };
+
+        // Touch & Tap events
+        tile.addEventListener('click', () => autoPlaceTile(tile));
+
         tilesBank.appendChild(tile);
       });
+
+      startTime = Date.now();
     }
 
-    initTiles();
+    function createFixedTile(letter, parentSlot) {
+      const tile = document.createElement('div');
+      tile.className = 'tile fixed-tile';
+      tile.innerText = letter;
+      tile.dataset.fixed = "true";
+      parentSlot.appendChild(tile);
+    }
+
+    initGame();
 
     function drag(ev) {
-      if (penaltyActive) return;
       ev.dataTransfer.setData("text", ev.target.id);
     }
 
     function allowDrop(ev) {
-      if (penaltyActive) return;
       ev.preventDefault();
-      if (ev.currentTarget.classList.contains('slot')) {
+      if (ev.currentTarget.classList.contains('slot') && !ev.currentTarget.classList.contains('fixed-slot')) {
         ev.currentTarget.classList.add('highlight');
       }
     }
@@ -297,13 +364,14 @@
     }
 
     function dropTile(ev, slotIndex) {
-      if (penaltyActive) return;
       ev.preventDefault();
       clearHighlight(ev);
 
+      const targetSlot = slots[slotIndex];
+      if (targetSlot.classList.contains('fixed-slot')) return;
+
       const tileId = ev.dataTransfer.getData("text");
       const tileEl = document.getElementById(tileId);
-      const targetSlot = slots[slotIndex];
 
       if (tileEl && targetSlot.children.length === 0) {
         targetSlot.appendChild(tileEl);
@@ -311,7 +379,6 @@
     }
 
     function returnToBank(ev) {
-      if (penaltyActive) return;
       ev.preventDefault();
       const tileId = ev.dataTransfer.getData("text");
       const tileEl = document.getElementById(tileId);
@@ -321,87 +388,117 @@
       }
     }
 
-    // Tap/Click helper to auto-place tile in the first empty slot
     function autoPlaceTile(tileEl) {
-      if (penaltyActive) return;
-      if (tileEl.parentElement.classList.contains('slot')) return;
+      if (tileEl.parentElement.classList.contains('slot')) {
+        tilesBank.appendChild(tileEl);
+        return;
+      }
 
-      for (let slot of slots) {
-        if (slot.children.length === 0) {
+      // Find first empty non-fixed slot
+      for (let i = 0; i < slots.length; i++) {
+        const slot = slots[i];
+        if (!slot.classList.contains('fixed-slot') && slot.children.length === 0) {
           slot.appendChild(tileEl);
           break;
         }
       }
     }
 
-    // Tap/Click helper to return slot tile back to bank
     function returnSlotTile(slotIndex) {
-      if (penaltyActive) return;
       const slot = slots[slotIndex];
+      if (slot.classList.contains('fixed-slot')) return;
+
       if (slot.children.length > 0) {
         tilesBank.appendChild(slot.children[0]);
       }
     }
 
     function resetTiles() {
-      if (penaltyActive) return;
       slots.forEach(slot => {
-        if (slot.children.length > 0) {
+        if (!slot.classList.contains('fixed-slot') && slot.children.length > 0) {
           tilesBank.appendChild(slot.children[0]);
         }
       });
       messageDiv.innerText = '';
     }
 
-    function startPenaltyClock() {
-      penaltyActive = true;
-      let secondsLeft = 10;
+    function triggerPenaltyAnimation() {
+      const penaltyEl = document.createElement('div');
+      penaltyEl.className = 'floating-penalty';
+      penaltyEl.innerText = '-20 points';
 
-      timerBanner.style.display = 'block';
-      timerVal.innerText = secondsLeft;
-      mainContainer.classList.add('disabled-input');
-      checkBtn.disabled = true;
-      resetBtn.disabled = true;
+      const rect = controlsArea.getBoundingClientRect();
+      const containerRect = mainContainer.getBoundingClientRect();
 
-      const interval = setInterval(() => {
-        secondsLeft--;
-        timerVal.innerText = secondsLeft;
+      penaltyEl.style.left = `${rect.left - containerRect.left + rect.width / 2 - 40}px`;
+      penaltyEl.style.top = `${rect.top - containerRect.top - 15}px`;
 
-        if (secondsLeft <= 0) {
-          clearInterval(interval);
-          penaltyActive = false;
-          timerBanner.style.display = 'none';
-          mainContainer.classList.remove('disabled-input');
-          checkBtn.disabled = false;
-          resetBtn.disabled = false;
-          messageDiv.innerText = '';
-        }
-      }, 1000);
+      mainContainer.appendChild(penaltyEl);
+
+      setTimeout(() => {
+        penaltyEl.remove();
+      }, 1200);
     }
 
     function checkAnswer() {
-      if (penaltyActive) return;
-
       let formedWord = "";
-      slots.forEach(slot => {
+
+      for (let slot of slots) {
         if (slot.children.length > 0) {
           formedWord += slot.children[0].innerText;
         }
-      });
+      }
 
       if (formedWord.length < targetWord.length) {
         messageDiv.className = 'message error';
-        messageDiv.innerText = '⚠️ Please fill all slots before submitting!';
+        messageDiv.innerText = '⚠️ Please place all letters into the slots!';
         return;
       }
 
       if (formedWord === targetWord) {
+        const endTime = Date.now();
+        const totalTimeSeconds = Math.floor((endTime - startTime) / 1000);
+
+        // Tiered time-based scoring
+        let baseScore = 10;
+        if (totalTimeSeconds <= 10) {
+          baseScore = 100;
+        } else if (totalTimeSeconds <= 20) {
+          baseScore = 90;
+        } else if (totalTimeSeconds <= 30) {
+          baseScore = 80;
+        } else if (totalTimeSeconds <= 40) {
+          baseScore = 70;
+        } else if (totalTimeSeconds <= 50) {
+          baseScore = 60;
+        } else if (totalTimeSeconds <= 60) {
+          baseScore = 50;
+        } else if (totalTimeSeconds <= 70) {
+          baseScore = 40;
+        } else if (totalTimeSeconds <= 80) {
+          baseScore = 30;
+        } else if (totalTimeSeconds <= 90) {
+          baseScore = 20;
+        } else {
+          baseScore = 10;
+        }
+
+        const finalScore = Math.max(10, baseScore - (wrongAttempts * 20));
+
         messageDiv.className = 'message success';
-        messageDiv.innerHTML = '🎉 Good job! The unlocked letter is R!';
+        messageDiv.innerHTML = '🎉 Good job! You found the third letter: R';
+
+        setTimeout(() => {
+          mainContainer.style.display = 'none';
+          resultsContainer.style.display = 'flex';
+          finalScoreDisplay.innerText = finalScore;
+        }, 1500);
+
       } else {
+        wrongAttempts++;
         messageDiv.className = 'message error';
-        messageDiv.innerText = '❌ Incorrect word! 10-second penalty applied.';
-        startPenaltyClock();
+        messageDiv.innerText = '❌ Incorrect word! Try again.';
+        triggerPenaltyAnimation();
       }
     }
   </script>
