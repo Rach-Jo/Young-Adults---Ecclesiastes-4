@@ -23,9 +23,10 @@
       touch-action: manipulation;
     }
 
-    /* Prevent mobile pull-to-refresh */
+    /* Prevent mobile pull-to-refresh gestures */
     html, body {
       overscroll-behavior-y: contain;
+      overscroll-behavior: none;
     }
 
     body {
@@ -248,7 +249,7 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(15, 23, 42, 0.92);
+      background: rgba(15, 23, 42, 0.95);
       backdrop-filter: blur(8px);
       z-index: 9999;
       justify-content: center;
@@ -343,7 +344,7 @@
 
   <script>
     // -------------------------------------------------------------
-    // INTERCEPT RELOAD & SHOW INSTRUCTOR WARNING MESSAGE
+    // DESKTOP & MOBILE RELOAD INTERCEPTION
     // -------------------------------------------------------------
     const reloadModal = document.getElementById('reloadModal');
 
@@ -355,7 +356,22 @@
       reloadModal.style.display = 'none';
     }
 
-    // 1. Intercept Keyboard Shortcuts (F5, Ctrl+R, Cmd+R, etc.)
+    // 1. Mobile Pull-to-Refresh Intercept
+    let startY = 0;
+    document.addEventListener('touchstart', (e) => {
+      startY = e.touches[0].pageY;
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+      const currentY = e.touches[0].pageY;
+      // If user swipes down while at top of page (mobile pull-to-refresh)
+      if (window.scrollY === 0 && currentY > startY + 40) {
+        if (e.cancelable) e.preventDefault();
+        showReloadModal();
+      }
+    }, { passive: false });
+
+    // 2. Desktop Keyboard Intercept (F5, Ctrl+R, Cmd+R)
     window.addEventListener('keydown', (e) => {
       if (
         e.key === 'F5' || 
@@ -367,12 +383,19 @@
       }
     });
 
-    // 2. Standard Browser Unload Fallback Prompt
-    window.addEventListener('beforeunload', (e) => {
+    // 3. Native Browser Unload Fallback Confirmation (Mobile & Desktop)
+    const handleBeforeUnload = (e) => {
       e.preventDefault();
       e.returnValue = 'Please inform the instructor before reloading!';
       return 'Please inform the instructor before reloading!';
-    });
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    // Force register touch interaction for mobile browser security requirements
+    document.addEventListener('touchstart', () => {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    }, { once: true });
 
     // -------------------------------------------------------------
     // GAME LOGIC
