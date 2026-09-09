@@ -155,6 +155,15 @@
       position: relative;
     }
 
+    .start-btn {
+      background: linear-gradient(135deg, #fde047 0%, #d97706 100%);
+      box-shadow: 0 4px 0 #b45309;
+      color: #0f172a;
+      font-size: 1.2rem;
+      padding: 14px 32px;
+      margin-top: 15px;
+    }
+
     .show-btn {
       background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
       box-shadow: 0 4px 0 #b45309;
@@ -250,14 +259,15 @@
       color: #fff;
     }
 
-    .reload-warning-modal {
-      display: none;
+    /* MODAL OVERLAYS */
+    .overlay-modal {
+      display: flex;
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(15, 23, 42, 0.98);
+      background: rgba(15, 23, 42, 0.95);
       backdrop-filter: blur(10px);
       z-index: 9999;
       justify-content: center;
@@ -265,56 +275,80 @@
       padding: 20px;
     }
 
-    .reload-warning-box {
+    .modal-box {
       background: rgba(15, 23, 42, 0.95);
-      border: 3px solid var(--danger);
+      border: 3px solid var(--sand-gold);
       border-radius: 20px;
       padding: 32px 24px;
-      max-width: 450px;
+      max-width: 480px;
       width: 100%;
       text-align: center;
+      box-shadow: 0 0 40px rgba(253, 224, 71, 0.3);
+    }
+
+    .modal-box h2 {
+      color: var(--sand-gold);
+      font-size: 1.8rem;
+      margin-bottom: 16px;
+    }
+
+    .modal-box p {
+      color: #f8fafc;
+      font-size: 1.05rem;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .reload-warning-modal {
+      display: none;
+    }
+
+    .reload-warning-box {
+      border-color: var(--danger);
       box-shadow: 0 0 40px rgba(239, 68, 68, 0.6);
     }
 
     .reload-warning-box h2 {
       color: var(--danger);
-      font-size: 1.8rem;
-      margin-bottom: 16px;
-    }
-
-    .reload-warning-box p {
-      color: #f8fafc;
-      font-size: 1.2rem;
-      font-weight: 700;
-      line-height: 1.5;
     }
   </style>
 </head>
 <body>
 
-  <div class="reload-warning-modal" id="reloadModal">
-    <div class="reload-warning-box">
+  <!-- Instructions / Start Modal -->
+  <div class="overlay-modal" id="startModal">
+    <div class="modal-box">
+      <h2>📜 Puzzle 4 Instructions</h2>
+      <p>Memorize the secret path from <strong>START (S)</strong> to <strong>GOAL (G)</strong>!</p>
+      <p>When you tap Start, you will have <strong>5 seconds</strong> to view the map before navigating.</p>
+      <p style="font-size: 0.9rem; color: #bae6fd;">Select adjacent tiles in sequence to build your path. You have 2 extra <strong>SHOW</strong> hints available if you get lost!</p>
+      <p style="font-size: 0.85rem; color: #ef4444; margin-top: 10px;">⚠️ Timer starts after the 5-second preview. -20 pts penalty per incorrect submission!</p>
+      <button class="start-btn" onclick="startGame()">Start Puzzle</button>
+    </div>
+  </div>
+
+  <!-- Permanent Custom Warning Screen -->
+  <div class="overlay-modal reload-warning-modal" id="reloadModal">
+    <div class="modal-box reload-warning-box">
       <h2>🚨 REFRESH LOCKED</h2>
       <p>Please inform the instructor before reloading!</p>
       <p style="font-size: 0.95rem; color: #bae6fd; margin-top: 12px;">You must scan the QR code again freshly to restart the puzzle.</p>
     </div>
   </div>
 
+  <!-- Main Game Container -->
   <div class="container" id="mainContainer">
     <h1>Puzzle 4: Wise Advisor's Path</h1>
 
     <p class="instructions" id="instructionsText">
-      Welcome traveler! Click <strong>SHOW</strong> to preview the secret path from <strong>START (S)</strong> to <strong>GOAL (G)</strong> <br>
-      You have 5 seconds to view the map before beginning!
+      Welcome traveler! Tap <strong>Start Puzzle</strong> to reveal the map preview.
     </p>
 
     <div class="grid-container disabled-grid" id="gridContainer"></div>
 
     <div class="controls-area" id="controlsArea">
-      <button class="show-btn" id="initialShowBtn" onclick="startInitialPreview()"> SHOW</button>
-
       <button class="show-btn" id="hintBtn" onclick="triggerMidGameShow()" style="display: none;">
-         SHOW
+        SHOW
         <span class="badge" id="hintBadge">2</span>
       </button>
       <button class="reset-btn" id="resetBtn" onclick="resetPath()" style="display: none;">Reset Path</button>
@@ -324,6 +358,7 @@
     <div class="message" id="message"></div>
   </div>
 
+  <!-- Results Page Container -->
   <div class="container results-page" id="resultsContainer">
     <h1>Puzzle Completed!</h1>
     <p class="instructions">The fourth letter unlocked is:</p>
@@ -332,6 +367,9 @@
   </div>
 
   <script>
+    // -------------------------------------------------------------
+    // PERMANENT RELOAD LOCKOUT LOGIC
+    // -------------------------------------------------------------
     const reloadModal = document.getElementById('reloadModal');
 
     function lockScreenWithMessage() {
@@ -380,6 +418,9 @@
       window.addEventListener('beforeunload', handleBeforeUnload);
     }, { once: true });
 
+    // -------------------------------------------------------------
+    // GAME LOGIC & PATH SYSTEM
+    // -------------------------------------------------------------
     const GRID_SIZE = 7;
     const startPos = { r: 0, c: 0 };
     const goalPos = { r: 6, c: 6 };
@@ -398,9 +439,9 @@
     let startTime = 0;
     let wrongAttempts = 0;
 
+    const startModal = document.getElementById('startModal');
     const gridContainer = document.getElementById('gridContainer');
     const messageDiv = document.getElementById('message');
-    const initialShowBtn = document.getElementById('initialShowBtn');
     const hintBtn = document.getElementById('hintBtn');
     const resetBtn = document.getElementById('resetBtn');
     const submitBtn = document.getElementById('submitBtn');
@@ -437,8 +478,12 @@
       renderUserPath();
     }
 
+    function startGame() {
+      startModal.style.display = 'none';
+      startInitialPreview();
+    }
+
     function startInitialPreview() {
-      initialShowBtn.style.display = 'none';
       messageDiv.className = 'message hint-msg';
       messageDiv.innerText = '📜 Memorize the path! (5 seconds)';
 
@@ -449,18 +494,18 @@
         gridContainer.classList.remove('disabled-grid');
         messageDiv.innerText = '';
         
-        instructionsText.innerHTML = `Navigate from <strong>START (S)</strong> to <strong>GOAL (G)</strong> by tapping adjacent tiles in sequence.<br>Click <strong>SHOW</strong> if you need another quick peak!`;
+        instructionsText.innerHTML = `Navigate from <strong>START (S)</strong> to <strong>GOAL (G)</strong> by tapping adjacent tiles in sequence.<br>Click <strong>SHOW</strong> if you need another quick peek!`;
         hintBtn.style.display = 'inline-block';
         resetBtn.style.display = 'inline-block';
         submitBtn.style.display = 'inline-block';
 
         gameStarted = true;
-        startTime = Date.now();
+        startTime = Date.now(); // Timer starts after preview ends
       }, 5000);
     }
 
     function triggerMidGameShow() {
-      if (hintsRemaining <= 0 || isViewingHint) return;
+      if (hintsRemaining <= 0 || isViewingHint || !gameStarted) return;
 
       hintsRemaining--;
       hintBadge.innerText = hintsRemaining;
