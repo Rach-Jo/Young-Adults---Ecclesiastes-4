@@ -298,6 +298,18 @@
       margin-bottom: 16px;
     }
 
+    .modal-box ul {
+      text-align: left;
+      margin: 12px 0 16px 20px;
+      color: #c7d2fe;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .modal-box li {
+      margin-bottom: 6px;
+    }
+
     .modal-box p {
       color: #f8fafc;
       font-size: 1.05rem;
@@ -325,13 +337,14 @@
   <div class="overlay-modal" id="startModal">
     <div class="modal-box">
       <h2>📜 Game Instructions</h2>
-      <li>Sort all 8 Bible books into their correct Testament basket:</li> <br>
-      <centre><strong>📜 Old Testament</strong> or <strong>✝️ New Testament</strong></centre>
-      <li>You can drag & drop pills into baskets or tap a basket to highlight it and tap a book to move it.</li>
-      <li>Once you finish, click submit!</li>
-      <p style="font-size: 0.85rem; color: #ef4444; margin-top: 10px;">The quicker you finish, the more points you get!</p>
-      <p style="font-size: 0.85rem; color: #ef4444; margin-top: 10px;">'-20 points for wrong answer'</p>
-            <button class="start-btn" id="startBtn">Start</button>
+      <ul>
+        <li>Sort all 8 Bible books into their correct Testament basket: <strong>📜 Old Testament</strong> or <strong>✝️ New Testament</strong></li>
+        <li>Drag & drop pills into baskets, or tap a basket to highlight it and tap a book to move it.</li>
+        <li>Once finished, tap Submit!</li>
+      </ul>
+      <p style="font-size: 0.85rem; color: #ef4444; margin-top: 10px;">⚡ The quicker you finish, the more points you get!</p>
+      <p style="font-size: 0.85rem; color: #ef4444; margin-top: 2px;">⚠️ -20 points for wrong answers</p>
+      <button class="start-btn" id="startBtn">Start</button>
     </div>
   </div>
 
@@ -422,15 +435,25 @@
     let isDragging = false;
 
     // --- RELOAD LOCK CHECK ---
-    if (sessionStorage.getItem('puzzle2_reloaded') === 'true') {
+    // Check both sessionStorage AND localStorage (for mobile persistence)
+    if (sessionStorage.getItem('puzzle2_started') === 'true' || localStorage.getItem('puzzle2_started') === 'true') {
       startModal.style.display = 'none';
       reloadModal.style.display = 'flex';
     }
 
-    // --- SET LOCK ON UNLOAD ---
-    window.addEventListener('beforeunload', function() {
+    // Mobile-friendly lifecycle listeners
+    function lockGame() {
       if (gameStarted) {
-        sessionStorage.setItem('puzzle2_reloaded', 'true');
+        sessionStorage.setItem('puzzle2_started', 'true');
+        localStorage.setItem('puzzle2_started', 'true');
+      }
+    }
+
+    window.addEventListener('beforeunload', lockGame);
+    window.addEventListener('pagehide', lockGame);
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'hidden') {
+        lockGame();
       }
     });
 
@@ -456,8 +479,13 @@
     startBtn.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
-      startModal.style.display = 'none';
+      
+      // Instantly mark as started to prevent reload attempts on mobile
       gameStarted = true;
+      sessionStorage.setItem('puzzle2_started', 'true');
+      localStorage.setItem('puzzle2_started', 'true');
+
+      startModal.style.display = 'none';
       startTime = Date.now();
       initGame();
     });
@@ -479,11 +507,11 @@
       if (!draggedPill || !gameStarted) return;
 
       const dist = Math.hypot(e.clientX - startX, e.clientY - startY);
-      
+
       if (!isDragging && dist > 8) {
         isDragging = true;
         draggedPill.classList.add('dragging');
-        
+
         dragGhost = draggedPill.cloneNode(true);
         dragGhost.classList.add('drag-ghost');
         dragGhost.classList.remove('dragging');
