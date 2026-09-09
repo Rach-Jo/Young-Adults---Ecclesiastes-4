@@ -195,6 +195,15 @@
       transition: transform 0.1s, filter 0.2s;
     }
 
+    .start-btn {
+      background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+      box-shadow: 0 4px 0 #92400e;
+      color: #0f172a;
+      font-size: 1.2rem;
+      padding: 14px 32px;
+      margin-top: 15px;
+    }
+
     .submit-btn {
       background: linear-gradient(135deg, #10b981 0%, #059669 100%);
       box-shadow: 0 4px 0 #047857;
@@ -263,15 +272,15 @@
       color: #fff;
     }
 
-    /* PERMANENT WARNING OVERLAY (NO DISMISS BUTTON) */
-    .reload-warning-modal {
-      display: none;
+    /* MODAL OVERLAYS */
+    .overlay-modal {
+      display: flex;
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(15, 23, 42, 0.98);
+      background: rgba(15, 23, 42, 0.95);
       backdrop-filter: blur(10px);
       z-index: 9999;
       justify-content: center;
@@ -279,36 +288,61 @@
       padding: 20px;
     }
 
-    .reload-warning-box {
+    .modal-box {
       background: rgba(30, 27, 75, 0.95);
-      border: 3px solid var(--danger);
+      border: 3px solid var(--gold);
       border-radius: 20px;
       padding: 32px 24px;
-      max-width: 450px;
+      max-width: 480px;
       width: 100%;
       text-align: center;
+      box-shadow: 0 0 40px rgba(251, 191, 36, 0.3);
+    }
+
+    .modal-box h2 {
+      color: var(--gold);
+      font-size: 1.8rem;
+      margin-bottom: 16px;
+    }
+
+    .modal-box p {
+      color: #f8fafc;
+      font-size: 1.05rem;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .reload-warning-modal {
+      display: none;
+    }
+
+    .reload-warning-box {
+      border-color: var(--danger);
       box-shadow: 0 0 40px rgba(239, 68, 68, 0.6);
     }
 
     .reload-warning-box h2 {
       color: var(--danger);
-      font-size: 1.8rem;
-      margin-bottom: 16px;
-    }
-
-    .reload-warning-box p {
-      color: #f8fafc;
-      font-size: 1.2rem;
-      font-weight: 700;
-      line-height: 1.5;
     }
   </style>
 </head>
 <body>
 
+  <!-- Instructions / Start Modal -->
+  <div class="overlay-modal" id="startModal">
+    <div class="modal-box">
+      <h2>📜 Puzzle 2 Instructions</h2>
+      <p>Sort all 8 Bible books into their correct Testament basket:</p>
+      <p><strong>📜 Old Testament</strong> or <strong>✝️ New Testament</strong></p>
+      <p style="font-size: 0.9rem; color: #c7d2fe;">You can drag & drop pills into baskets or tap a basket to highlight it and tap a book to move it.</p>
+      <p style="font-size: 0.85rem; color: #ef4444; margin-top: 10px;">⚠️ Timer starts as soon as you tap Start. -20 pts penalty per incorrect submission!</p>
+      <button class="start-btn" onclick="startGame()">Start Puzzle</button>
+    </div>
+  </div>
+
   <!-- Permanent Custom Warning Screen -->
-  <div class="reload-warning-modal" id="reloadModal">
-    <div class="reload-warning-box">
+  <div class="overlay-modal reload-warning-modal" id="reloadModal">
+    <div class="modal-box reload-warning-box">
       <h2>🚨 REFRESH LOCKED</h2>
       <p>Please inform the instructor before reloading!</p>
       <p style="font-size: 0.95rem; color: #c7d2fe; margin-top: 12px;">You must scan the QR code again freshly to restart the puzzle.</p>
@@ -372,7 +406,7 @@
       lockScreenWithMessage();
     }
 
-    // 1. Mobile Pull-to-Refresh Intercept
+    // Mobile Pull-to-Refresh Intercept
     let startY = 0;
     document.addEventListener('touchstart', (e) => {
       startY = e.touches[0].pageY;
@@ -386,7 +420,7 @@
       }
     }, { passive: false });
 
-    // 2. Desktop Keyboard Intercept (F5, Ctrl+R, Cmd+R)
+    // Desktop Keyboard Intercept (F5, Ctrl+R, Cmd+R)
     window.addEventListener('keydown', (e) => {
       if (
         e.key === 'F5' || 
@@ -398,7 +432,7 @@
       }
     });
 
-    // 3. Native Browser Unload Handler
+    // Native Browser Unload Handler
     const handleBeforeUnload = (e) => {
       sessionStorage.setItem('puzzle_reloaded', 'true');
       e.preventDefault();
@@ -427,9 +461,11 @@
     ];
 
     let selectedTestament = 'OT';
-    let startTime = Date.now();
+    let startTime = null;
     let wrongAttempts = 0;
+    let gameStarted = false;
 
+    const startModal = document.getElementById('startModal');
     const bookPool = document.getElementById('bookPool');
     const itemsOT = document.getElementById('items-OT');
     const itemsNT = document.getElementById('items-NT');
@@ -466,12 +502,17 @@
 
         bookPool.appendChild(pill);
       });
+    }
 
-      startTime = Date.now();
+    function startGame() {
+      startModal.style.display = 'none';
+      gameStarted = true;
+      startTime = Date.now(); // Timer starts only now
     }
 
     // --- DRAG AND DROP HANDLERS ---
     function handlePointerDown(e) {
+      if (!gameStarted) return;
       if (e.button !== undefined && e.button !== 0) return; // Only primary clicks/touches
       draggedPill = e.currentTarget;
       startX = e.clientX;
@@ -484,7 +525,7 @@
     }
 
     function handlePointerMove(e) {
-      if (!draggedPill) return;
+      if (!draggedPill || !gameStarted) return;
 
       const dist = Math.hypot(e.clientX - startX, e.clientY - startY);
       
@@ -519,7 +560,7 @@
       document.removeEventListener('pointerup', handlePointerUp);
       document.removeEventListener('pointercancel', handlePointerUp);
 
-      if (!draggedPill) return;
+      if (!draggedPill || !gameStarted) return;
 
       if (isDragging) {
         const dropTarget = getDropTarget(e.clientX, e.clientY);
@@ -571,6 +612,7 @@
     }
 
     function selectBasket(type) {
+      if (!gameStarted) return;
       selectedTestament = type;
       if (type === 'OT') {
         basketOT.classList.add('active');
@@ -582,6 +624,7 @@
     }
 
     function handlePillClick(pill) {
+      if (!gameStarted) return;
       if (pill.parentElement.classList.contains('basket-items')) {
         bookPool.appendChild(pill);
       } else {
@@ -592,6 +635,7 @@
     }
 
     function resetSorting() {
+      if (!gameStarted) return;
       const allPills = document.querySelectorAll('.book-pill');
       allPills.forEach(pill => bookPool.appendChild(pill));
       messageDiv.innerText = '';
@@ -616,6 +660,8 @@
     }
 
     function checkSorting() {
+      if (!gameStarted) return;
+
       if (bookPool.children.length > 0) {
         messageDiv.className = 'message error';
         messageDiv.innerText = '⚠️ Please sort all books into a basket first!';
