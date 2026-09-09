@@ -23,7 +23,6 @@
       touch-action: manipulation;
     }
 
-    /* Prevent mobile pull-to-refresh gestures */
     html, body {
       overscroll-behavior-y: contain;
       overscroll-behavior: none;
@@ -68,7 +67,6 @@
       color: #c7d2fe;
     }
 
-    /* Unsorted Pool */
     .pool-title {
       font-size: 0.9rem;
       font-weight: 800;
@@ -92,7 +90,6 @@
       transition: background-color 0.2s, border-color 0.2s;
     }
 
-    /* Baskets Layout */
     .baskets-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -142,7 +139,6 @@
       min-height: 100px;
     }
 
-    /* Book Pills */
     .book-pill {
       background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
       color: white;
@@ -165,7 +161,6 @@
       cursor: grabbing;
     }
 
-    /* Drag Ghost Element */
     .drag-ghost {
       position: fixed;
       pointer-events: none;
@@ -175,7 +170,6 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
 
-    /* Controls & Buttons */
     .controls-area {
       display: flex;
       justify-content: center;
@@ -202,6 +196,8 @@
       font-size: 1.2rem;
       padding: 14px 32px;
       margin-top: 15px;
+      position: relative;
+      z-index: 10001;
     }
 
     .submit-btn {
@@ -226,7 +222,6 @@
     .success { color: #34d399; text-shadow: 0 0 10px rgba(52, 211, 153, 0.5); }
     .error { color: #f87171; }
 
-    /* Floating Penalty Animation */
     .floating-penalty {
       position: absolute;
       color: #ef4444;
@@ -244,7 +239,6 @@
       100% { opacity: 0; transform: translateY(-55px) scale(1.15); }
     }
 
-    /* Results Screen */
     .results-page {
       display: none;
       flex-direction: column;
@@ -272,7 +266,6 @@
       color: #fff;
     }
 
-    /* MODAL OVERLAYS */
     .overlay-modal {
       display: flex;
       position: fixed;
@@ -331,12 +324,12 @@
   <!-- Instructions / Start Modal -->
   <div class="overlay-modal" id="startModal">
     <div class="modal-box">
-      <h2>📜 Puzzle 2 Instructions</h2>
+      <h2>📜 Game Instructions</h2>
       <p>Sort all 8 Bible books into their correct Testament basket:</p>
       <p><strong>📜 Old Testament</strong> or <strong>✝️ New Testament</strong></p>
       <p style="font-size: 0.9rem; color: #c7d2fe;">You can drag & drop pills into baskets or tap a basket to highlight it and tap a book to move it.</p>
-      <p style="font-size: 0.85rem; color: #ef4444; margin-top: 10px;">⚠️ Timer starts as soon as you tap Start. -20 pts penalty per incorrect submission!</p>
-      <button class="start-btn" onclick="startGame()">Start Puzzle</button>
+      <p style="font-size: 0.85rem; color: #ef4444; margin-top: 10px;">The quicker you finish, the more points you get!</p>
+      <button class="start-btn" id="startBtn">Start</button>
     </div>
   </div>
 
@@ -344,8 +337,8 @@
   <div class="overlay-modal reload-warning-modal" id="reloadModal">
     <div class="modal-box reload-warning-box">
       <h2>🚨 REFRESH LOCKED</h2>
-      <p>Please inform the instructor before reloading!</p>
-      <p style="font-size: 0.95rem; color: #c7d2fe; margin-top: 12px;">You must scan the QR code again freshly to restart the puzzle.</p>
+      <p>Please inform the instructor!</p>
+      <p style="font-size: 0.95rem; color: #c7d2fe; margin-top: 12px;">Scan the QR code again freshly to restart the puzzle.</p>
     </div>
   </div>
 
@@ -392,63 +385,6 @@
   </div>
 
   <script>
-    // -------------------------------------------------------------
-    // PERMANENT RELOAD LOCKOUT LOGIC
-    // -------------------------------------------------------------
-    const reloadModal = document.getElementById('reloadModal');
-
-    function lockScreenWithMessage() {
-      sessionStorage.setItem('puzzle_reloaded', 'true');
-      reloadModal.style.display = 'flex';
-    }
-
-    if (sessionStorage.getItem('puzzle_reloaded') === 'true') {
-      lockScreenWithMessage();
-    }
-
-    // Mobile Pull-to-Refresh Intercept
-    let startY = 0;
-    document.addEventListener('touchstart', (e) => {
-      startY = e.touches[0].pageY;
-    }, { passive: true });
-
-    document.addEventListener('touchmove', (e) => {
-      const currentY = e.touches[0].pageY;
-      if (window.scrollY === 0 && currentY > startY + 40) {
-        if (e.cancelable) e.preventDefault();
-        lockScreenWithMessage();
-      }
-    }, { passive: false });
-
-    // Desktop Keyboard Intercept (F5, Ctrl+R, Cmd+R)
-    window.addEventListener('keydown', (e) => {
-      if (
-        e.key === 'F5' || 
-        (e.ctrlKey && e.key.toLowerCase() === 'r') || 
-        (e.metaKey && e.key.toLowerCase() === 'r')
-      ) {
-        e.preventDefault();
-        lockScreenWithMessage();
-      }
-    });
-
-    // Native Browser Unload Handler
-    const handleBeforeUnload = (e) => {
-      sessionStorage.setItem('puzzle_reloaded', 'true');
-      e.preventDefault();
-      e.returnValue = 'Please inform the instructor before reloading!';
-      return 'Please inform the instructor before reloading!';
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    document.addEventListener('touchstart', () => {
-      window.addEventListener('beforeunload', handleBeforeUnload);
-    }, { once: true });
-
-    // -------------------------------------------------------------
-    // GAME LOGIC & POINTER DRAG SYSTEM
-    // -------------------------------------------------------------
     const booksData = [
       { id: 'b1', name: 'Genesis', testament: 'OT' },
       { id: 'b2', name: 'Exodus', testament: 'OT' },
@@ -466,6 +402,8 @@
     let gameStarted = false;
 
     const startModal = document.getElementById('startModal');
+    const reloadModal = document.getElementById('reloadModal');
+    const startBtn = document.getElementById('startBtn');
     const bookPool = document.getElementById('bookPool');
     const itemsOT = document.getElementById('items-OT');
     const itemsNT = document.getElementById('items-NT');
@@ -477,11 +415,23 @@
     const finalScoreDisplay = document.getElementById('finalScore');
     const controlsArea = document.getElementById('controlsArea');
 
-    // Drag tracking state variables
     let draggedPill = null;
     let dragGhost = null;
     let startX = 0, startY = 0;
     let isDragging = false;
+
+    // --- RELOAD LOCK CHECK ---
+    if (sessionStorage.getItem('puzzle2_reloaded') === 'true') {
+      startModal.style.display = 'none';
+      reloadModal.style.display = 'flex';
+    }
+
+    // --- SET LOCK ON UNLOAD ---
+    window.addEventListener('beforeunload', function() {
+      if (gameStarted) {
+        sessionStorage.setItem('puzzle2_reloaded', 'true');
+      }
+    });
 
     function initGame() {
       bookPool.innerHTML = '';
@@ -497,23 +447,23 @@
         pill.id = book.id;
         pill.dataset.testament = book.testament;
 
-        // Pointer event listeners for Unified Touch & Mouse Dragging
         pill.addEventListener('pointerdown', handlePointerDown);
-
         bookPool.appendChild(pill);
       });
     }
 
-    function startGame() {
+    startBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
       startModal.style.display = 'none';
       gameStarted = true;
-      startTime = Date.now(); // Timer starts only now
-    }
+      startTime = Date.now();
+      initGame();
+    });
 
-    // --- DRAG AND DROP HANDLERS ---
     function handlePointerDown(e) {
       if (!gameStarted) return;
-      if (e.button !== undefined && e.button !== 0) return; // Only primary clicks/touches
+      if (e.button !== undefined && e.button !== 0) return;
       draggedPill = e.currentTarget;
       startX = e.clientX;
       startY = e.clientY;
@@ -529,12 +479,10 @@
 
       const dist = Math.hypot(e.clientX - startX, e.clientY - startY);
       
-      // Threshold before triggering drag state
       if (!isDragging && dist > 8) {
         isDragging = true;
         draggedPill.classList.add('dragging');
         
-        // Create drag ghost clone
         dragGhost = draggedPill.cloneNode(true);
         dragGhost.classList.add('drag-ghost');
         dragGhost.classList.remove('dragging');
@@ -546,7 +494,6 @@
         dragGhost.style.left = `${e.clientX}px`;
         dragGhost.style.top = `${e.clientY}px`;
 
-        // Highlight targeted container dynamically
         const dropTarget = getDropTarget(e.clientX, e.clientY);
         clearHighlights();
         if (dropTarget) {
@@ -578,7 +525,6 @@
           messageDiv.innerText = '';
         }
 
-        // Cleanup drag states & ghost
         draggedPill.classList.remove('dragging');
         if (dragGhost) {
           dragGhost.remove();
@@ -586,7 +532,6 @@
         }
         clearHighlights();
       } else {
-        // Simple tap fallback handler
         handlePillClick(draggedPill);
       }
 
@@ -712,8 +657,6 @@
         triggerPenaltyAnimation();
       }
     }
-
-    initGame();
   </script>
 </body>
 </html>
