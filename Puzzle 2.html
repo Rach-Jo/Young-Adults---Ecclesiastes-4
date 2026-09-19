@@ -434,25 +434,24 @@
     let startX = 0, startY = 0;
     let isDragging = false;
 
-    // --- RELOAD LOCK CHECK ---
-    // Check both sessionStorage AND localStorage (for mobile persistence)
-    if (sessionStorage.getItem('puzzle2_started') === 'true' || localStorage.getItem('puzzle2_started') === 'true') {
+    // --- RELOAD LOCK LOGIC ---
+    // Use sessionStorage so refreshing during a session triggers the lock,
+    // but opening the page anew presents the game normally.
+    if (sessionStorage.getItem('puzzle2_active_session') === 'true') {
       startModal.style.display = 'none';
       reloadModal.style.display = 'flex';
     }
 
-    // Mobile-friendly lifecycle listeners
     function lockGame() {
       if (gameStarted) {
-        sessionStorage.setItem('puzzle2_started', 'true');
-        localStorage.setItem('puzzle2_started', 'true');
+        sessionStorage.setItem('puzzle2_active_session', 'true');
       }
     }
 
     window.addEventListener('beforeunload', lockGame);
     window.addEventListener('pagehide', lockGame);
     document.addEventListener('visibilitychange', function() {
-      if (document.visibilityState === 'hidden') {
+      if (document.visibilityState === 'hidden' && gameStarted) {
         lockGame();
       }
     });
@@ -480,13 +479,11 @@
       e.preventDefault();
       e.stopPropagation();
       
-      // Instantly mark as started to prevent reload attempts on mobile
       gameStarted = true;
-      sessionStorage.setItem('puzzle2_started', 'true');
-      localStorage.setItem('puzzle2_started', 'true');
+      sessionStorage.setItem('puzzle2_active_session', 'true');
 
       startModal.style.display = 'none';
-      startTime = Date.now();
+      startTime = Date.now(); // Timer starts only after clicking Start
       initGame();
     });
 
